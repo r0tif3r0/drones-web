@@ -11,7 +11,7 @@ export const MainPage: FC = () => {
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [sliderStyle, setSliderStyle] = useState<{ width: number; left: number }>({ width: 0, left: 0 });
+  const [, setSliderStyle] = useState<{ width: number; left: number }>({ width: 0, left: 0 });
   const tabContainerHeight = 70;
 
   const tabs = [
