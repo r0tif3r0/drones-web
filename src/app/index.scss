@@ -1,28 +1,28 @@
 // @use '../assets/variables';
 
-// @font-face {
-//   font-family: 'SBSansText';
-//   src: url('../assets/fonts/SBSansText.woff2') format('woff2');
-//   font-weight: 400;
-//   font-style: normal;
-//   font-display: swap;
-// }
+@font-face {
+  font-family: 'SBSansText';
+  src: url('../assets/fonts/SBSansText.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
-// @font-face {
-//   font-family: 'SBSansText';
-//   src: url('../assets/fonts/SBSansTextMedium.woff2') format('woff2');
-//   font-weight: 500;
-//   font-style: normal;
-//   font-display: swap;
-// }
+@font-face {
+  font-family: 'SBSansText';
+  src: url('../assets/fonts/SBSansTextMedium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
 
-// @font-face {
-//   font-family: 'SBSansText';
-//   src: url('../assets/fonts/SBSansTextBold.woff2') format('woff2');
-//   font-weight: 700;
-//   font-style: normal;
-//   font-display: swap;
-// }
+@font-face {
+  font-family: 'SBSansText';
+  src: url('../assets/fonts/SBSansTextBold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   font-family: 'SBSansText', sans-serif;
@@ -53,6 +53,8 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   text-rendering: optimizeSpeed;
+  color: #e6dede;
+  background-color: #000;
 }
 
 // Списки с ролью list
@@ -134,7 +136,6 @@ select {
 
 * {
   text-decoration: none;
-  color: black;
   &:active, &:hover {
     text-decoration: none;
   }

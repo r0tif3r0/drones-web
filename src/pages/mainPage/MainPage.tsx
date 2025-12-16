@@ -11,8 +11,9 @@ export const MainPage: FC = () => {
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [, setSliderStyle] = useState<{ width: number; left: number }>({ width: 0, left: 0 });
+  const [sliderStyle, setSliderStyle] = useState<{ width: number; left: number }>({ width: 0, left: 0 });
   const tabContainerHeight = 70;
+  const lastActiveRef = useRef<string | null>(null);
 
   const tabs = [
     { id: "tab-1", title: "Продукт", component: <ProductTab/> },
@@ -50,12 +51,28 @@ export const MainPage: FC = () => {
         }
       });
 
-      if (newActiveId !== activeId && newActiveId) {
+      if (newActiveId && newActiveId !== lastActiveRef.current) {
+        lastActiveRef.current = newActiveId;
         setActiveId(newActiveId);
       }
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/c2617856-a908-4cbf-8d9f-ce50f9beef8c',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          sessionId:'debug-session',
+          runId:'pre-fix',
+          hypothesisId:'A',
+          location:'MainPage.tsx:handleScroll',
+          message:'scroll processed',
+          data:{scrollY,newActiveId,tabContainerHeight,heroTop:tabContainerRef.current?.parentElement?.offsetTop ?? null},
+          timestamp:Date.now()
+        })
+      }).catch(()=>{});
+      // #endregion
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll);
     handleScroll();
 
@@ -63,7 +80,7 @@ export const MainPage: FC = () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
     };
-  }, [activeId]);
+  }, []);
 
   const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -72,6 +89,21 @@ export const MainPage: FC = () => {
       const top = section.offsetTop - tabContainerHeight + 1;
       window.scrollTo({ top, behavior: "smooth" });
     }
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/c2617856-a908-4cbf-8d9f-ce50f9beef8c',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        sessionId:'debug-session',
+        runId:'pre-fix',
+        hypothesisId:'B',
+        location:'MainPage.tsx:handleTabClick',
+        message:'tab click',
+        data:{id,sectionFound:!!section},
+        timestamp:Date.now()
+      })
+    }).catch(()=>{});
+    // #endregion
   };
 
   useEffect(() => {
@@ -79,6 +111,21 @@ export const MainPage: FC = () => {
       const el = tabRefs.current[activeId];
       if (el) {
         setSliderStyle({ width: el.offsetWidth, left: el.offsetLeft });
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/c2617856-a908-4cbf-8d9f-ce50f9beef8c',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            sessionId:'debug-session',
+            runId:'pre-fix',
+            hypothesisId:'C',
+            location:'MainPage.tsx:sliderEffect',
+            message:'slider updated',
+            data:{activeId,width:el.offsetWidth,left:el.offsetLeft},
+            timestamp:Date.now()
+          })
+        }).catch(()=>{});
+        // #endregion
       }
     }
   }, [activeId]);
@@ -87,7 +134,12 @@ export const MainPage: FC = () => {
     <>
       <section className={styles.et_hero_tabs}>
         <Header/>
-        <div className={styles.et_hero_tabs_container} ref={tabContainerRef}>
+        <div
+          className={styles.et_hero_tabs_container}
+          ref={tabContainerRef}
+          role="tablist"
+          aria-label="Навигация по разделам"
+        >
           {tabs.map(({ id, title }) => (
             <a
               key={id}
@@ -96,6 +148,8 @@ export const MainPage: FC = () => {
                 tabRefs.current[id] = el;
               }}
               className={`${styles.et_hero_tab} ${activeId === id ? styles.active : ""}`}
+              aria-current={activeId === id ? "page" : undefined}
+              role="tab"
               onClick={(e) => handleTabClick(e, id)}
             >
               {title}
@@ -103,6 +157,7 @@ export const MainPage: FC = () => {
           ))}
           <span
             className={styles.et_hero_tab_slider}
+            style={{ width: `${sliderStyle.width}px`, left: `${sliderStyle.left}px` }}
           ></span>
         </div>
       </section>
