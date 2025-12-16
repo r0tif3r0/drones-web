@@ -1,14 +1,29 @@
+@use "sass:math";
+
+.header {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .container {
   font-family: "Oswald", sans-serif;
   font-style: italic;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  top: 40%;
-  left: 50%;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .glitch {
-  color: rgb(223, 191, 191);
+  color: var(--color-text, rgb(223, 191, 191));
   position: relative;
   font-size: 9rem;
   // margin: 70px 200px;
@@ -19,8 +34,8 @@
   content: attr(data-text);
   position: absolute;
   left: -2px;
-  text-shadow: -5px 0 magenta;
-  background: black;
+  text-shadow: -5px 0 var(--color-glitch-1, magenta);
+  background: var(--color-bg, #000);
   overflow: hidden;
   top: 0;
   animation: noise-1 3s linear infinite alternate-reverse;
@@ -30,8 +45,8 @@
   content: attr(data-text);
   position: absolute;
   left: 2px;
-  text-shadow: -5px 0 lightgreen;
-  background: black;
+  text-shadow: -5px 0 var(--color-glitch-2, lightgreen);
+  background: var(--color-bg, #000);
   overflow: hidden;
   top: 0;
   animation: noise-2 3s linear infinite alternate-reverse;
@@ -40,9 +55,9 @@
 @keyframes noise-1 {
   $steps: 30;
   @for $i from 1 through $steps {
-    #{percentage($i*(1/$steps))} {
-      $top: random(100);
-      $bottom: random(101 - $top);
+    #{math.percentage($i * math.div(1, $steps))} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
       clip-path: inset(#{$top}px 0 #{$bottom}px 0);
     }
   }
@@ -51,17 +66,23 @@
 @keyframes noise-2 {
   $steps: 30;
   @for $i from 0 through $steps {
-    #{percentage($i*(1/$steps))} {
-      $top: random(100);
-      $bottom: random(101 - $top);
+    #{math.percentage($i * math.div(1, $steps))} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
       clip-path: inset(#{$top}px 0 #{$bottom}px 0);
     }
   }
 }
 
 .scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   mix-blend-mode: difference;
+  pointer-events: none;
 }
 
 .scanlines::before {
@@ -69,7 +90,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  top: -70px;
+  top: 0;
   left: 0;
 
   background: repeating-linear-gradient(
@@ -94,7 +115,7 @@
 
 .glow {
   @extend .glitch;
-  text-shadow: 0 0 1000px rgb(223, 191, 191);
+  text-shadow: 0 0 1000px var(--color-glow, rgb(223, 191, 191));
   color: transparent;
   position: absolute;
   top: 0;
@@ -104,13 +125,18 @@
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 100;
   font-size: .8vw;
-  color: rgba(165, 141, 141, .4);
+  color: var(--color-text-muted, rgba(165, 141, 141, .4));
   text-transform: uppercase;
   letter-spacing: 1em;
   text-align: center;
-  position: absolute;
-  left: 17%;
+  position: relative;
+  margin-top: var(--spacing-md, 1rem);
   animation: glitch-2 5s 5.02s infinite;
+  
+  @media (max-width: 1000px) {
+    position: relative;
+    left: auto;
+  }
 }
 
 @keyframes glitch-2 {
@@ -126,11 +152,43 @@
   .glitch {
     font-size: 6rem;
   }
+  
+  .subtitle {
+    font-size: 1vw;
+    position: relative;
+    left: auto;
+    margin-top: var(--spacing-md, 1rem);
+  }
+}
+
+@media (max-width: 800px) {
+  .glitch {
+    font-size: 4.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1.2vw;
+    position: relative;
+    left: auto;
+    letter-spacing: 0.8em;
+    margin-top: var(--spacing-md, 1rem);
+  }
 }
 
 @media (max-width: 600px) {
+  .header {
+    padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
+    min-height: calc(100vh - 55px); // Учитываем высоту табов
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 var(--spacing-sm, 0.5rem);
+  }
+  
   .glitch {
-    font-size: 4rem;
+    font-size: 3rem;
     animation: none;
 
     &::before, &::after {
@@ -138,10 +196,47 @@
       animation: none;
     }
   }
+  
+  .glow {
+    font-size: 3rem;
+  }
+  
   .scanlines::before {
     animation: none;
   }
+  
   .subtitle {
+    font-size: 0.7rem;
+    position: relative;
+    left: auto;
+    transform: none;
+    letter-spacing: 0.5em;
     animation: none;
+    margin-top: var(--spacing-md, 1rem);
+    text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .header {
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-sm, 0.5rem);
+    min-height: calc(100vh - 55px);
+  }
+  
+  .container {
+    padding: 0 var(--spacing-xs, 0.25rem);
+  }
+  
+  .glitch {
+    font-size: 2.5rem;
+  }
+  
+  .glow {
+    font-size: 2.5rem;
+  }
+  
+  .subtitle {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
   }
 }

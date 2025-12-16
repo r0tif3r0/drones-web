@@ -12,7 +12,23 @@ export const MainPage: FC = () => {
   const tabRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sliderStyle, setSliderStyle] = useState<{ width: number; left: number }>({ width: 0, left: 0 });
-  const tabContainerHeight = 70;
+  const [tabContainerHeight, setTabContainerHeight] = useState(70);
+  
+  useEffect(() => {
+    const updateTabHeight = () => {
+      if (window.innerWidth <= 600) {
+        setTabContainerHeight(55);
+      } else if (window.innerWidth <= 800) {
+        setTabContainerHeight(60);
+      } else {
+        setTabContainerHeight(70);
+      }
+    };
+    
+    updateTabHeight();
+    window.addEventListener('resize', updateTabHeight);
+    return () => window.removeEventListener('resize', updateTabHeight);
+  }, []);
   const lastActiveRef = useRef<string | null>(null);
 
   const tabs = [
@@ -55,21 +71,6 @@ export const MainPage: FC = () => {
         lastActiveRef.current = newActiveId;
         setActiveId(newActiveId);
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c2617856-a908-4cbf-8d9f-ce50f9beef8c',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          sessionId:'debug-session',
-          runId:'pre-fix',
-          hypothesisId:'A',
-          location:'MainPage.tsx:handleScroll',
-          message:'scroll processed',
-          data:{scrollY,newActiveId,tabContainerHeight,heroTop:tabContainerRef.current?.parentElement?.offsetTop ?? null},
-          timestamp:Date.now()
-        })
-      }).catch(()=>{});
-      // #endregion
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -89,21 +90,6 @@ export const MainPage: FC = () => {
       const top = section.offsetTop - tabContainerHeight + 1;
       window.scrollTo({ top, behavior: "smooth" });
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c2617856-a908-4cbf-8d9f-ce50f9beef8c',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        sessionId:'debug-session',
-        runId:'pre-fix',
-        hypothesisId:'B',
-        location:'MainPage.tsx:handleTabClick',
-        message:'tab click',
-        data:{id,sectionFound:!!section},
-        timestamp:Date.now()
-      })
-    }).catch(()=>{});
-    // #endregion
   };
 
   useEffect(() => {
@@ -111,21 +97,6 @@ export const MainPage: FC = () => {
       const el = tabRefs.current[activeId];
       if (el) {
         setSliderStyle({ width: el.offsetWidth, left: el.offsetLeft });
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/c2617856-a908-4cbf-8d9f-ce50f9beef8c',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            sessionId:'debug-session',
-            runId:'pre-fix',
-            hypothesisId:'C',
-            location:'MainPage.tsx:sliderEffect',
-            message:'slider updated',
-            data:{activeId,width:el.offsetWidth,left:el.offsetLeft},
-            timestamp:Date.now()
-          })
-        }).catch(()=>{});
-        // #endregion
       }
     }
   }, [activeId]);
@@ -157,7 +128,10 @@ export const MainPage: FC = () => {
           ))}
           <span
             className={styles.et_hero_tab_slider}
-            style={{ width: `${sliderStyle.width}px`, left: `${sliderStyle.left}px` }}
+            style={{ 
+              width: `${sliderStyle.width}px`, 
+              left: `${sliderStyle.left + sliderStyle.width / 2}px` 
+            }}
           ></span>
         </div>
       </section>

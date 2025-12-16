@@ -7,7 +7,7 @@ a {
 }
 
 .et_hero_tabs {
-    background: black;
+    background: var(--color-bg, #000);
 }
 
 .et_hero_tabs,
@@ -16,9 +16,18 @@ a {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     position: relative;
     text-align: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    
+    @media (max-width: 600px) {
+        min-height: 100vh;
+        height: auto;
+        padding-bottom: var(--spacing-xl, 2rem);
+    }
 h1 {
     font-size: 3rem;
     margin: 0;
@@ -42,12 +51,26 @@ h3 {
     bottom: 0;
     width: 100%;
     height: 70px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    background: black;
+    box-shadow: 0 0 30px rgba(216, 86, 191, 0.2), 
+                0 -5px 20px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(
+        to top,
+        var(--color-bg, #000) 0%,
+        rgba(32, 0, 77, 0.3) 100%
+    );
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(216, 86, 191, 0.2);
     z-index: 10;
+    -webkit-overflow-scrolling: touch;
+    
     &__top {
         position: fixed;
         top: 0;
+        box-shadow: 0 5px 30px rgba(216, 86, 191, 0.2),
+                    0 2px 20px rgba(0, 0, 0, 0.5);
+        border-top: none;
+        border-bottom: 1px solid rgba(216, 86, 191, 0.2);
     }
 }
 
@@ -56,38 +79,85 @@ h3 {
     justify-content: center;
     align-items: center;
     flex: 1;
-    color: rgb(223, 191, 191);
+    color: var(--color-text, rgb(223, 191, 191));
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 0.1rem;
-    transition: all 0.5s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 1.3rem;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: manipulation;
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 0;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(216, 86, 191, 0.15),
+            transparent
+        );
+        transform: translateX(-50%);
+        transition: width 0.3s ease;
+    }
     
     &:hover {
-        color:white;
-        background: rgba(255,0,255,0.1);
-        transition: all 0.5s ease;
+        color: white;
+        background: var(--color-accent, rgba(255, 0, 255, 0.1));
+        text-shadow: 0 0 10px rgba(216, 86, 191, 0.5);
+        
+        &::before {
+            width: 100%;
+        }
     }
 
     &:focus-visible {
-        outline: 2px solid #d856bf;
+        outline: 2px solid var(--color-primary, #d856bf);
         outline-offset: -4px;
+        box-shadow: inset 0 0 20px rgba(216, 86, 191, 0.3);
     }
 
     &.active {
         color: white;
-        background: rgba(255, 0, 255, 0.08);
+        background: linear-gradient(
+            to bottom,
+            rgba(216, 86, 191, 0.15),
+            rgba(216, 86, 191, 0.05)
+        );
+        text-shadow: 0 0 15px rgba(216, 86, 191, 0.6);
+        
+        &::before {
+            width: 100%;
+        }
     }
 }
 
 .et_hero_tab_slider {
-position: absolute;
-bottom: 0;
-height: 6px;
-background: rgb(54, 22, 54);
-transition: left 0.3s ease, width 0.3s ease;
-width: 0;
-border-radius: 999px;
+    position: absolute;
+    bottom: 0;
+    height: 4px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--color-primary, #d856bf),
+        var(--color-primary, #d856bf),
+        transparent
+    );
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0;
+    border-radius: 999px;
+    box-shadow: 0 0 10px var(--color-primary, #d856bf),
+                0 0 20px rgba(216, 86, 191, 0.5);
+    transform: translateX(-50%);
+    left: 0;
 }
 
 @media (max-width: 1000px) {
@@ -100,34 +170,95 @@ border-radius: 999px;
             font-size: 1rem;
         }
     }
+    
+    .et_hero_tab {
+        font-size: 1.1rem;
+        letter-spacing: 0.05rem;
+    }
 }
 
 @media (max-width: 800px) {
-.et_hero_tabs,
-.et_slide {
-    h1 {
-        font-size: 2rem;
+    .et_hero_tabs,
+    .et_slide {
+        h1 {
+            font-size: 2rem;
+        }
+        p {
+            font-size: 0.9rem;
+        }
     }
-    p {
-        font-size: 0.8rem;
+    
+    .et_hero_tabs_container {
+        height: 60px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        
+        &::-webkit-scrollbar {
+            display: none;
+        }
     }
-}
-.et_hero_tab {
-    font-size: 0.8rem;
-}
+    
+    .et_hero_tab {
+        font-size: 0.9rem;
+        min-width: fit-content;
+        padding: 0 var(--spacing-md, 1rem);
+        flex-shrink: 0;
+        letter-spacing: 0.03rem;
+    }
+    
+    .et_hero_tab_slider {
+        height: 3px;
+    }
 }
 
 @media (max-width: 600px) {
     .et_hero_tabs,
     .et_slide {
         h1 {
-            font-size: 1rem;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
         }
         p {
-            font-size: 0.7rem;
+            font-size: 0.85rem;
         }
     }
+    
+    .et_hero_tabs_container {
+        height: 55px;
+        box-shadow: 0 0 20px rgba(216, 86, 191, 0.15), 
+                    0 -3px 15px rgba(0, 0, 0, 0.5);
+    }
+    
     .et_hero_tab {
-        font-size: 0.5rem;
+        font-size: 0.75rem;
+        padding: 0 var(--spacing-sm, 0.5rem);
+        min-height: 44px; // Touch target minimum
+        letter-spacing: 0.02rem;
     }
+    
+    .et_hero_tab_slider {
+        height: 2px;
     }
+}
+
+@media (max-width: 400px) {
+    .et_hero_tabs,
+    .et_slide {
+        h1 {
+            font-size: 1.25rem;
+            letter-spacing: 0.3rem;
+        }
+        p {
+            font-size: 0.8rem;
+        }
+    }
+    
+    .et_hero_tab {
+        font-size: 0.7rem;
+        padding: 0 var(--spacing-xs, 0.25rem);
+    }
+}

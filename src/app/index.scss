@@ -33,6 +33,119 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  // ============================================
+  // ТИПОГРАФИКА - Размеры шрифтов
+  // ============================================
+  --font-size-xs: 0.75rem;      // 12px
+  --font-size-sm: 0.875rem;     // 14px
+  --font-size-base: 1rem;       // 16px
+  --font-size-lg: 1.125rem;     // 18px
+  --font-size-xl: 1.25rem;      // 20px
+  --font-size-2xl: 1.5rem;      // 24px
+  --font-size-3xl: 1.875rem;    // 30px
+  --font-size-4xl: 2.25rem;     // 36px
+  --font-size-5xl: 3rem;        // 48px
+  --font-size-6xl: 3.75rem;     // 60px
+
+  // Высоты строк
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-loose: 2;
+
+  // Межбуквенные интервалы
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+
+  // ============================================
+  // SPACING - Отступы и промежутки
+  // ============================================
+  --spacing-xs: 0.25rem;    // 4px
+  --spacing-sm: 0.5rem;     // 8px
+  --spacing-md: 1rem;      // 16px
+  --spacing-lg: 1.5rem;    // 24px
+  --spacing-xl: 2rem;      // 32px
+  --spacing-2xl: 3rem;     // 48px
+  --spacing-3xl: 4rem;     // 64px
+  --spacing-4xl: 6rem;     // 96px
+  --spacing-5xl: 8rem;     // 128px
+
+  // ============================================
+  // ЦВЕТОВАЯ ПАЛИТРА - на основе Hyperspeed
+  // ============================================
+  // Основные цвета из анимации
+  --color-bg: #000000; // background
+  --color-road: #080808; // roadColor
+  --color-island: #0a0a0a; // islandColor
+  --color-lines: #ffffff; // shoulderLines, brokenLines
+  
+  // Акцентные цвета из машин (leftCars)
+  --color-primary: #d856bf; // основной розовый
+  --color-primary-variant-1: #6750a2; // фиолетовый
+  --color-primary-variant-2: #c247ac; // розовый вариант
+  
+  // Акцентные цвета из машин (rightCars) и палок
+  --color-secondary: #03b3c3; // голубой (sticks)
+  --color-secondary-variant-1: #0e5ea5; // синий
+  --color-secondary-variant-2: #324555; // темно-синий
+  
+  // Текст и UI
+  --color-text: #e0d0e0; // светлый розовато-белый
+  --color-text-muted: rgba(224, 208, 224, 0.5);
+  --color-text-bright: #ffffff;
+  
+  // Эффекты и интерактивность
+  --color-accent: rgba(216, 86, 191, 0.15); // hover на основе primary
+  --color-accent-light: rgba(216, 86, 191, 0.08); // active
+  --color-accent-cyan: rgba(3, 179, 195, 0.15); // hover на основе secondary
+  --color-slider: #d856bf; // слайдер на основе primary
+  
+  // Градиенты
+  --color-gradient-start: rgba(0, 0, 0, 0.8);
+  --color-gradient-mid: rgba(103, 80, 162, 0.3); // фиолетовый
+  --color-gradient-end: #000000;
+  --color-gradient-cyan: rgba(3, 179, 195, 0.2);
+  
+  // Свечение и тени
+  --color-glow-primary: #d856bf;
+  --color-glow-secondary: #03b3c3;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-shadow-glow: rgba(216, 86, 191, 0.4);
+  
+  // Цвета для glitch эффекта (на основе палитры)
+  --color-glitch-1: #d856bf; // розовый
+  --color-glitch-2: #03b3c3; // голубой
+
+  // ============================================
+  // АНИМАЦИИ И ПЕРЕХОДЫ
+  // ============================================
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+  --transition-slower: 750ms ease-in-out;
+  --transition-slowest: 1000ms ease-in-out;
+
+  // Easing функции
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  // ============================================
+  // Z-INDEX СЛОИ
+  // ============================================
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
 }
 
 /* Modern Reset */
@@ -47,14 +160,16 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 2rem; // Отступ для фиксированных элементов при скролле
 }
 
 body {
   min-height: 100vh;
   line-height: 1.5;
   text-rendering: optimizeSpeed;
-  color: #e6dede;
-  background-color: #000;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  font-size: var(--font-size-base);
 }
 
 // Списки с ролью list
@@ -68,6 +183,11 @@ body {
 // Базовые ссылки
 a:not([class]) {
   text-decoration-skip-ink: auto;
+  transition: color var(--transition-base);
+  
+  &:hover {
+    color: var(--color-primary);
+  }
 }
 
 // Изображения
@@ -113,6 +233,7 @@ button {
   border: none;
   cursor: pointer;
   padding: 0; // Добавляем явный сброс padding
+  transition: all var(--transition-base);
 }
 
 input {
@@ -138,5 +259,277 @@ select {
   text-decoration: none;
   &:active, &:hover {
     text-decoration: none;
+  }
+}
+
+// ============================================
+// UTILITY КЛАССЫ ДЛЯ АНИМАЦИЙ
+// ============================================
+
+// Fade-in анимации
+.fade-in {
+  opacity: 0;
+  animation: fadeIn var(--transition-slow) var(--ease-out) forwards;
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(2rem);
+  animation: fadeInUp var(--transition-slow) var(--ease-out) forwards;
+}
+
+.fade-in-down {
+  opacity: 0;
+  transform: translateY(-2rem);
+  animation: fadeInDown var(--transition-slow) var(--ease-out) forwards;
+}
+
+.fade-in-left {
+  opacity: 0;
+  transform: translateX(-2rem);
+  animation: fadeInLeft var(--transition-slow) var(--ease-out) forwards;
+}
+
+.fade-in-right {
+  opacity: 0;
+  transform: translateX(2rem);
+  animation: fadeInRight var(--transition-slow) var(--ease-out) forwards;
+}
+
+// Задержки для анимаций
+.fade-in-delay-1 {
+  animation-delay: 100ms;
+}
+
+.fade-in-delay-2 {
+  animation-delay: 200ms;
+}
+
+.fade-in-delay-3 {
+  animation-delay: 300ms;
+}
+
+.fade-in-delay-4 {
+  animation-delay: 400ms;
+}
+
+.fade-in-delay-5 {
+  animation-delay: 500ms;
+}
+
+// Keyframes для fade-in анимаций
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Hover эффекты
+.hover-glow {
+  transition: box-shadow var(--transition-base);
+  
+  &:hover {
+    box-shadow: 0 0 20px var(--color-glow-primary);
+  }
+}
+
+.hover-scale {
+  transition: transform var(--transition-base);
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.hover-lift {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px var(--color-shadow-glow);
+  }
+}
+
+// Плавные переходы
+.transition-fast {
+  transition: all var(--transition-fast);
+}
+
+.transition-base {
+  transition: all var(--transition-base);
+}
+
+.transition-slow {
+  transition: all var(--transition-slow);
+}
+
+// ============================================
+// TYPOGRAPHY UTILITY КЛАССЫ
+// ============================================
+
+// Размеры шрифтов
+.text-xs { font-size: var(--font-size-xs); }
+.text-sm { font-size: var(--font-size-sm); }
+.text-base { font-size: var(--font-size-base); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+.text-2xl { font-size: var(--font-size-2xl); }
+.text-3xl { font-size: var(--font-size-3xl); }
+.text-4xl { font-size: var(--font-size-4xl); }
+.text-5xl { font-size: var(--font-size-5xl); }
+.text-6xl { font-size: var(--font-size-6xl); }
+
+// Высоты строк
+.leading-tight { line-height: var(--line-height-tight); }
+.leading-normal { line-height: var(--line-height-normal); }
+.leading-relaxed { line-height: var(--line-height-relaxed); }
+.leading-loose { line-height: var(--line-height-loose); }
+
+// Межбуквенные интервалы
+.tracking-tight { letter-spacing: var(--letter-spacing-tight); }
+.tracking-normal { letter-spacing: var(--letter-spacing-normal); }
+.tracking-wide { letter-spacing: var(--letter-spacing-wide); }
+.tracking-wider { letter-spacing: var(--letter-spacing-wider); }
+.tracking-widest { letter-spacing: var(--letter-spacing-widest); }
+
+// Цвета текста
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-muted { color: var(--color-text-muted); }
+.text-bright { color: var(--color-text-bright); }
+
+// ============================================
+// SCROLL UTILITIES
+// ============================================
+
+// Плавный скролл для секций
+.scroll-smooth-section {
+  scroll-margin-top: 2rem;
+  scroll-behavior: smooth;
+}
+
+// ============================================
+// MOBILE OPTIMIZATIONS
+// ============================================
+
+// Улучшение производительности на мобильных
+@media (max-width: 768px) {
+  * {
+    // Оптимизация для touch устройств
+    -webkit-tap-highlight-color: rgba(216, 86, 191, 0.2);
+  }
+  
+  // Улучшение рендеринга на мобильных
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
+  }
+}
+
+// Минимальные размеры для touch targets
+@media (max-width: 768px) {
+  button,
+  a,
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  // Улучшение для форм на мобильных
+  input,
+  textarea,
+  select {
+    font-size: 16px; // Предотвращает zoom на iOS
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0; // Убираем iOS стили
+  }
+  
+  // Улучшение для скролла
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+// Контейнер с ограничением ширины для лучшей читаемости
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  
+  @media (min-width: 768px) {
+    padding: 0 var(--spacing-xl);
+  }
+}
+
+.container-narrow {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  
+  @media (min-width: 768px) {
+    padding: 0 var(--spacing-xl);
+  }
+}
+
+.container-wide {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  
+  @media (min-width: 768px) {
+    padding: 0 var(--spacing-xl);
   }
 }
