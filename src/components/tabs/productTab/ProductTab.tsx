@@ -28,9 +28,11 @@ export const ProductTab: FC = () => {
   }, []);
 
   useEffect(() => {
+    // Более чувствительные настройки для мобильных устройств
+    const isMobile = window.innerWidth <= 600;
     const observerOptions = {
-      threshold: 0.2,
-      rootMargin: '0px 0px -100px 0px'
+      threshold: isMobile ? 0.1 : 0.2,
+      rootMargin: isMobile ? '0px 0px -50px 0px' : '0px 0px -100px 0px'
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -59,7 +61,7 @@ export const ProductTab: FC = () => {
 
   useEffect(() => {
     if (!allowMotion) return;
-    
+
     // Отключаем parallax на мобильных для лучшей производительности
     const isMobile = window.innerWidth <= 768;
     if (isMobile) return;

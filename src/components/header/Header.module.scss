@@ -4,10 +4,56 @@
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  // На мобильных устройствах используем dvh
+  @media (max-width: 600px) {
+    min-height: 100dvh;
+    @supports not (min-height: 100dvh) {
+      min-height: 100vh;
+    }
+  }
+  // Более темный цветной градиент в стиле сайта
+  background: linear-gradient(
+    to bottom,
+    rgba(103, 80, 162, 0.08) 0%,
+    rgba(0, 0, 0, 0.97) 30%,
+    rgba(0, 0, 0, 0.95) 70%,
+    rgba(3, 179, 195, 0.05) 100%
+  );
+  background-size: 100% 100%;
+  overflow: hidden;
+  
+  // Дополнительный радиальный градиент для глубины (темнее)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(
+        ellipse at 30% 20%,
+        rgba(216, 86, 191, 0.05) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 70% 80%,
+        rgba(3, 179, 195, 0.04) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at center,
+        rgba(103, 80, 162, 0.03) 0%,
+        transparent 60%
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 .container {
@@ -20,6 +66,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  z-index: 1; // Поверх фонового градиента
 }
 
 .glitch {
@@ -34,22 +81,24 @@
   content: attr(data-text);
   position: absolute;
   left: -2px;
-  text-shadow: -5px 0 var(--color-glitch-1, magenta);
-  background: var(--color-bg, #000);
+  text-shadow: -5px 0 var(--color-primary, #d856bf);
+  background: transparent;
   overflow: hidden;
   top: 0;
   animation: noise-1 3s linear infinite alternate-reverse;
+  mix-blend-mode: screen;
 }
 
 .glitch::after {
   content: attr(data-text);
   position: absolute;
   left: 2px;
-  text-shadow: -5px 0 var(--color-glitch-2, lightgreen);
-  background: var(--color-bg, #000);
+  text-shadow: -5px 0 var(--color-secondary, #03b3c3);
+  background: transparent;
   overflow: hidden;
   top: 0;
   animation: noise-2 3s linear infinite alternate-reverse;
+  mix-blend-mode: screen;
 }
 
 @keyframes noise-1 {
@@ -89,8 +138,8 @@
   content: "";
   position: absolute;
   width: 100%;
-  height: 100%;
-  top: 0;
+  height: 110%;
+  top: -5%;
   left: 0;
 
   background: repeating-linear-gradient(
@@ -115,7 +164,10 @@
 
 .glow {
   @extend .glitch;
-  text-shadow: 0 0 1000px var(--color-glow, rgb(223, 191, 191));
+  text-shadow: 
+    0 0 400px rgba(216, 86, 191, 0.4),
+    0 0 600px rgba(3, 179, 195, 0.3),
+    0 0 800px rgba(103, 80, 162, 0.2);
   color: transparent;
   position: absolute;
   top: 0;
@@ -178,7 +230,9 @@
 @media (max-width: 600px) {
   .header {
     padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
-    min-height: calc(100vh - 55px); // Учитываем высоту табов
+    height: 100%;
+    min-height: 100%;
+    // На мобильных табов нет, поэтому полная высота
   }
   
   .container {

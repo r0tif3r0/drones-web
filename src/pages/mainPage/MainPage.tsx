@@ -13,12 +13,17 @@ export const MainPage: FC = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sliderStyle, setSliderStyle] = useState<{ width: number; left: number }>({ width: 0, left: 0 });
   const [tabContainerHeight, setTabContainerHeight] = useState(70);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   useEffect(() => {
     const updateTabHeight = () => {
-      if (window.innerWidth <= 600) {
-        setTabContainerHeight(55);
-      } else if (window.innerWidth <= 800) {
+      const width = window.innerWidth;
+      setIsMobile(width <= 600);
+      
+      if (width <= 600) {
+        setTabContainerHeight(0); // На мобильных навбар скрыт
+      } else if (width <= 800) {
         setTabContainerHeight(60);
       } else {
         setTabContainerHeight(70);
@@ -42,7 +47,17 @@ export const MainPage: FC = () => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
 
-      if (tabContainerRef.current) {
+      // Обновляем состояние мобильного устройства
+      const currentIsMobile = window.innerWidth <= 600;
+      if (currentIsMobile !== isMobile) {
+        setIsMobile(currentIsMobile);
+        // Закрываем меню при изменении размера экрана
+        if (!currentIsMobile) {
+          setIsMobileMenuOpen(false);
+        }
+      }
+
+      if (tabContainerRef.current && !isMobile) {
         const heroSection = tabContainerRef.current.parentElement;
         const heroTop = heroSection?.offsetTop ?? 0;
         const heroHeight = heroSection?.clientHeight ?? 0;
@@ -59,7 +74,7 @@ export const MainPage: FC = () => {
       tabs.forEach(({ id }) => {
         const section = document.getElementById(id);
         if (section) {
-          const top = section.offsetTop - tabContainerHeight;
+          const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight);
           const bottom = top + section.offsetHeight;
           if (scrollY >= top && scrollY < bottom) {
             newActiveId = id;
@@ -81,14 +96,30 @@ export const MainPage: FC = () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
     };
-  }, []);
+  }, [isMobile, tabContainerHeight, isMobileMenuOpen]);
 
   const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const section = document.getElementById(id);
     if (section) {
-      const top = section.offsetTop - tabContainerHeight + 1;
+      const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight) + 1;
       window.scrollTo({ top, behavior: "smooth" });
+      setIsMobileMenuOpen(false); // Закрываем меню после клика
+    }
+  };
+  
+  const handleMobileMenuToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+  
+  const handleMobileNavClick = (id: string) => {
+    const section = document.getElementById(id);
+    if (section) {
+      const top = section.offsetTop;
+      window.scrollTo({ top, behavior: "smooth" });
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -105,36 +136,95 @@ export const MainPage: FC = () => {
     <>
       <section className={styles.et_hero_tabs}>
         <Header/>
-        <div
-          className={styles.et_hero_tabs_container}
-          ref={tabContainerRef}
-          role="tablist"
-          aria-label="Навигация по разделам"
-        >
-          {tabs.map(({ id, title }) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              ref={(el) => {
-                tabRefs.current[id] = el;
+        {/* Десктопная навигация */}
+        {!isMobile && (
+          <div
+            className={styles.et_hero_tabs_container}
+            ref={tabContainerRef}
+            role="tablist"
+            aria-label="Навигация по разделам"
+          >
+            {tabs.map(({ id, title }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                ref={(el) => {
+                  tabRefs.current[id] = el;
+                }}
+                className={`${styles.et_hero_tab} ${activeId === id ? styles.active : ""}`}
+                aria-current={activeId === id ? "page" : undefined}
+                role="tab"
+                onClick={(e) => handleTabClick(e, id)}
+              >
+                {title}
+              </a>
+            ))}
+            <span
+              className={styles.et_hero_tab_slider}
+              style={{ 
+                width: `${sliderStyle.width}px`, 
+                left: `${sliderStyle.left + sliderStyle.width / 2}px` 
               }}
-              className={`${styles.et_hero_tab} ${activeId === id ? styles.active : ""}`}
-              aria-current={activeId === id ? "page" : undefined}
-              role="tab"
-              onClick={(e) => handleTabClick(e, id)}
-            >
-              {title}
-            </a>
-          ))}
-          <span
-            className={styles.et_hero_tab_slider}
-            style={{ 
-              width: `${sliderStyle.width}px`, 
-              left: `${sliderStyle.left + sliderStyle.width / 2}px` 
-            }}
-          ></span>
-        </div>
+            ></span>
+          </div>
+        )}
       </section>
+
+      {/* Мобильная навигация - FAB с меню */}
+      {isMobile && (
+        <>
+          <button
+            className={`${styles.mobile_fab} ${isMobileMenuOpen ? styles.mobile_fab_open : ""}`}
+            onClick={handleMobileMenuToggle}
+            aria-label="Открыть меню навигации"
+            aria-expanded={isMobileMenuOpen}
+          >
+            <span className={styles.mobile_fab_icon}>
+              {isMobileMenuOpen ? "✕" : "☰"}
+            </span>
+          </button>
+          
+          {isMobileMenuOpen && (
+            <div 
+              className={styles.mobile_menu_overlay} 
+              onClick={(e) => {
+                // Не закрываем меню, если клик был на FAB
+                const target = e.target as HTMLElement;
+                if (!target.closest(`.${styles.mobile_fab}`)) {
+                  setIsMobileMenuOpen(false);
+                }
+              }}
+            >
+              <nav 
+                className={styles.mobile_menu}
+                onClick={(e) => e.stopPropagation()}
+                role="navigation"
+                aria-label="Мобильная навигация"
+              >
+                <div className={styles.mobile_menu_header}>
+                  <h2>Навигация</h2>
+                </div>
+                <ul className={styles.mobile_menu_list}>
+                  {tabs.map(({ id, title }) => (
+                    <li key={id}>
+                      <button
+                        className={`${styles.mobile_menu_item} ${activeId === id ? styles.mobile_menu_item_active : ""}`}
+                        onClick={() => handleMobileNavClick(id)}
+                        aria-current={activeId === id ? "page" : undefined}
+                      >
+                        <span className={styles.mobile_menu_item_text}>{title}</span>
+                        {activeId === id && (
+                          <span className={styles.mobile_menu_item_indicator}>●</span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+          )}
+        </>
+      )}
 
       <main className={styles.et_main}>
         {tabs.map(({ id, component }) => (

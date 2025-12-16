@@ -8,9 +8,47 @@ a {
 
 .et_hero_tabs {
     background: var(--color-bg, #000);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    min-height: 100vh;
+    max-height: 100vh;
+    position: relative;
+    text-align: center;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    box-sizing: border-box;
+    
+    // Для мобильных устройств используем dvh (dynamic viewport height)
+    @media (max-width: 600px) {
+        height: 100dvh;
+        min-height: 100dvh;
+        max-height: 100dvh;
+        // Fallback для браузеров без поддержки dvh
+        @supports not (height: 100dvh) {
+            height: 100vh;
+            min-height: 100vh;
+            max-height: 100vh;
+            // Дополнительный fallback для старых браузеров
+            height: -webkit-fill-available;
+        }
+    }
+    
+    // Для очень маленьких экранов
+    @media (max-width: 400px) {
+        height: 100dvh;
+        min-height: 100dvh;
+        max-height: 100dvh;
+        @supports not (height: 100dvh) {
+            height: 100vh;
+            min-height: 100vh;
+            max-height: 100vh;
+        }
+    }
 }
 
-.et_hero_tabs,
 .et_slide {
     display: flex;
     flex-direction: column;
@@ -26,7 +64,7 @@ a {
     @media (max-width: 600px) {
         min-height: 100vh;
         height: auto;
-        padding-bottom: var(--spacing-xl, 2rem);
+        padding-bottom: calc(var(--spacing-xl, 2rem) + 56px + var(--spacing-md, 1rem)); // Учитываем FAB кнопку
     }
 h1 {
     font-size: 3rem;
@@ -51,26 +89,89 @@ h3 {
     bottom: 0;
     width: 100%;
     height: 70px;
-    box-shadow: 0 0 30px rgba(216, 86, 191, 0.2), 
-                0 -5px 20px rgba(0, 0, 0, 0.5);
+    // Liquid Glass эффект в стиле Apple
     background: linear-gradient(
-        to top,
-        var(--color-bg, #000) 0%,
-        rgba(32, 0, 77, 0.3) 100%
+        to bottom,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.04) 50%,
+        rgba(255, 255, 255, 0.02) 100%
     );
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(216, 86, 191, 0.2);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 
+        0 -8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     z-index: 10;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    overflow: hidden;
+    
+    // Верхний блик для liquid glass эффекта
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.15) 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            transparent 100%
+        );
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    // Градиентная полоса снизу с цветами темы
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            var(--color-primary, #d856bf) 20%,
+            var(--color-secondary, #03b3c3) 50%,
+            var(--color-primary-variant-1, #6750a2) 80%,
+            transparent
+        );
+        opacity: 0.6;
+        filter: blur(1px);
+        z-index: 1;
+    }
     
     &__top {
         position: fixed;
         top: 0;
-        box-shadow: 0 5px 30px rgba(216, 86, 191, 0.2),
-                    0 2px 20px rgba(0, 0, 0, 0.5);
         border-top: none;
-        border-bottom: 1px solid rgba(216, 86, 191, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+            inset 0 1px 0 rgba(0, 0, 0, 0.1);
+        
+        &::before {
+            top: auto;
+            bottom: 0;
+            background: linear-gradient(
+                to top,
+                rgba(255, 255, 255, 0.15) 0%,
+                rgba(255, 255, 255, 0.08) 50%,
+                transparent 100%
+            );
+        }
+        
+        &::after {
+            top: 0;
+            bottom: auto;
+        }
     }
 }
 
@@ -79,62 +180,117 @@ h3 {
     justify-content: center;
     align-items: center;
     flex: 1;
-    color: var(--color-text, rgb(223, 191, 191));
+    color: var(--color-text-muted, rgba(224, 208, 224, 0.7));
     text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.1rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: 0.08rem;
+    transition: all var(--transition-base, 300ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
+    font-size: 1.15rem;
     position: relative;
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     touch-action: manipulation;
+    isolation: isolate;
+    margin: var(--spacing-xs, 0.25rem);
+    border-radius: 0.75rem;
+    z-index: 2;
     
+    // Liquid Glass фон для таба
     &::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 50%;
-        width: 0;
-        height: 100%;
+        inset: 0;
         background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(216, 86, 191, 0.15),
+            135deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0.08) 100%
+        );
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: inherit;
+        opacity: 0;
+        transition: opacity var(--transition-base);
+        z-index: -1;
+        box-shadow: 
+            inset 0 1px 2px rgba(255, 255, 255, 0.3),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    // Верхний блик для liquid glass
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.2),
+            rgba(255, 255, 255, 0.1),
             transparent
         );
-        transform: translateX(-50%);
-        transition: width 0.3s ease;
+        border-radius: 0.75rem 0.75rem 0 0;
+        opacity: 0;
+        transition: opacity var(--transition-base);
+        pointer-events: none;
+        z-index: 0;
     }
     
     &:hover {
-        color: white;
-        background: var(--color-accent, rgba(255, 0, 255, 0.1));
-        text-shadow: 0 0 10px rgba(216, 86, 191, 0.5);
+        color: var(--color-text-bright, #ffffff);
+        text-shadow: 0 0 10px rgba(216, 86, 191, 0.4);
         
         &::before {
-            width: 100%;
+            opacity: 0.6;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        
+        &::after {
+            opacity: 0.6;
         }
     }
 
     &:focus-visible {
-        outline: 2px solid var(--color-primary, #d856bf);
-        outline-offset: -4px;
-        box-shadow: inset 0 0 20px rgba(216, 86, 191, 0.3);
+        outline: 2px solid rgba(255, 255, 255, 0.4);
+        outline-offset: 2px;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
     }
 
     &.active {
-        color: white;
-        background: linear-gradient(
-            to bottom,
-            rgba(216, 86, 191, 0.15),
-            rgba(216, 86, 191, 0.05)
-        );
-        text-shadow: 0 0 15px rgba(216, 86, 191, 0.6);
+        color: var(--color-text-bright, #ffffff);
+        text-shadow: 
+            0 0 15px rgba(216, 86, 191, 0.6),
+            0 0 25px rgba(3, 179, 195, 0.4);
         
+        // Liquid Glass эффект для активного таба
         &::before {
-            width: 100%;
+            opacity: 1;
+            background: linear-gradient(
+                135deg,
+                rgba(216, 86, 191, 0.15) 0%,
+                rgba(3, 179, 195, 0.12) 50%,
+                rgba(103, 80, 162, 0.15) 100%
+            );
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                inset 0 1px 3px rgba(255, 255, 255, 0.4),
+                inset 0 -1px 3px rgba(0, 0, 0, 0.15),
+                0 4px 20px rgba(216, 86, 191, 0.2),
+                0 0 30px rgba(3, 179, 195, 0.15);
+        }
+        
+        &::after {
+            opacity: 1;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.3),
+                rgba(255, 255, 255, 0.15),
+                transparent
+            );
         }
     }
 }
@@ -142,22 +298,26 @@ h3 {
 .et_hero_tab_slider {
     position: absolute;
     bottom: 0;
-    height: 4px;
+    height: 2px;
     background: linear-gradient(
         90deg,
         transparent,
-        var(--color-primary, #d856bf),
-        var(--color-primary, #d856bf),
+        var(--color-primary, #d856bf) 20%,
+        var(--color-secondary, #03b3c3) 50%,
+        var(--color-primary-variant-1, #6750a2) 80%,
         transparent
     );
-    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: left var(--transition-base, 300ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1)), 
+                width var(--transition-base, 300ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
     width: 0;
-    border-radius: 999px;
-    box-shadow: 0 0 10px var(--color-primary, #d856bf),
-                0 0 20px rgba(216, 86, 191, 0.5);
+    border-radius: 0;
+    box-shadow: 
+        0 -1px 8px rgba(216, 86, 191, 0.5),
+        0 0 15px rgba(3, 179, 195, 0.3);
     transform: translateX(-50%);
     left: 0;
+    z-index: 3;
+    filter: blur(0.5px);
 }
 
 @media (max-width: 1000px) {
@@ -196,6 +356,8 @@ h3 {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
         
         &::-webkit-scrollbar {
             display: none;
@@ -208,10 +370,14 @@ h3 {
         padding: 0 var(--spacing-md, 1rem);
         flex-shrink: 0;
         letter-spacing: 0.03rem;
+        
+        &::after {
+            height: 2px;
+        }
     }
     
     .et_hero_tab_slider {
-        height: 3px;
+        height: 2px;
     }
 }
 
@@ -227,21 +393,224 @@ h3 {
         }
     }
     
+    // Скрываем десктопную навигацию на мобильных
     .et_hero_tabs_container {
-        height: 55px;
-        box-shadow: 0 0 20px rgba(216, 86, 191, 0.15), 
-                    0 -3px 15px rgba(0, 0, 0, 0.5);
+        display: none;
+    }
+}
+
+// Мобильная навигация - FAB кнопка
+.mobile_fab {
+    position: fixed;
+    bottom: var(--spacing-xl, 2rem);
+    right: var(--spacing-xl, 2rem);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(
+        135deg,
+        var(--color-primary, #d856bf),
+        var(--color-secondary, #03b3c3)
+    );
+    border: none;
+    box-shadow: 
+        0 4px 12px rgba(216, 86, 191, 0.4),
+        0 0 20px rgba(216, 86, 191, 0.3);
+    cursor: pointer;
+    z-index: 1002; // Выше меню и overlay, чтобы клики всегда работали
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base, 300ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    pointer-events: auto; // Убеждаемся, что клики работают
+    
+    &:hover {
+        transform: scale(1.1);
+        box-shadow: 
+            0 6px 16px rgba(216, 86, 191, 0.5),
+            0 0 30px rgba(216, 86, 191, 0.4);
     }
     
-    .et_hero_tab {
-        font-size: 0.75rem;
-        padding: 0 var(--spacing-sm, 0.5rem);
-        min-height: 44px; // Touch target minimum
-        letter-spacing: 0.02rem;
+    &:active {
+        transform: scale(0.95);
     }
     
-    .et_hero_tab_slider {
-        height: 2px;
+    &.mobile_fab_open {
+        background: linear-gradient(
+            135deg,
+            var(--color-secondary, #03b3c3),
+            var(--color-primary, #d856bf)
+        );
+        transform: rotate(90deg);
+    }
+}
+
+.mobile_fab_icon {
+    color: var(--color-text-bright, #ffffff);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform var(--transition-base);
+}
+
+// Overlay для мобильного меню
+.mobile_menu_overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 999;
+    animation: fadeIn var(--transition-base) var(--ease-out);
+}
+
+// Мобильное меню
+.mobile_menu {
+    position: fixed;
+    bottom: calc(var(--spacing-xl, 2rem) + 56px + var(--spacing-md, 1rem));
+    right: var(--spacing-xl, 2rem);
+    width: calc(100vw - var(--spacing-xl, 2rem) * 2);
+    max-width: 320px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid rgba(216, 86, 191, 0.3);
+    border-radius: 1rem;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(216, 86, 191, 0.2);
+    overflow: hidden;
+    z-index: 1001;
+    animation: slideUp var(--transition-base) var(--ease-out);
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.mobile_menu_header {
+    padding: var(--spacing-lg, 1.5rem);
+    border-bottom: 1px solid rgba(216, 86, 191, 0.2);
+    
+    h2 {
+        margin: 0;
+        font-size: var(--font-size-lg, 1.125rem);
+        font-weight: 600;
+        color: var(--color-text-bright, #ffffff);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        background: linear-gradient(
+            135deg,
+            var(--color-primary, #d856bf),
+            var(--color-secondary, #03b3c3)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+.mobile_menu_list {
+    list-style: none;
+    margin: 0;
+    padding: var(--spacing-sm, 0.5rem) 0;
+}
+
+.mobile_menu_item {
+    width: 100%;
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-xl, 2rem);
+    background: transparent;
+    border: none;
+    border-left: 3px solid transparent;
+    color: var(--color-text, #e0d0e0);
+    font-size: var(--font-size-base, 1rem);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md, 1rem);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:hover {
+        background: rgba(216, 86, 191, 0.1);
+        border-left-color: var(--color-primary, #d856bf);
+        color: var(--color-text-bright, #ffffff);
+    }
+    
+    &:active {
+        background: rgba(216, 86, 191, 0.15);
+    }
+    
+    &.mobile_menu_item_active {
+        background: rgba(216, 86, 191, 0.15);
+        border-left-color: var(--color-primary, #d856bf);
+        color: var(--color-text-bright, #ffffff);
+    }
+}
+
+.mobile_menu_item_text {
+    flex: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mobile_menu_item_indicator {
+    color: var(--color-primary, #d856bf);
+    font-size: 0.75rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@media (max-width: 400px) {
+    .mobile_fab {
+        bottom: var(--spacing-lg, 1.5rem);
+        right: var(--spacing-lg, 1.5rem);
+        width: 52px;
+        height: 52px;
+    }
+    
+    .mobile_menu {
+        bottom: calc(var(--spacing-lg, 1.5rem) + 52px + var(--spacing-md, 1rem));
+        right: var(--spacing-lg, 1.5rem);
+        width: calc(100vw - var(--spacing-lg, 1.5rem) * 2);
+        max-width: none;
+    }
+    
+    .mobile_menu_item {
+        padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem);
+        font-size: var(--font-size-sm, 0.875rem);
     }
 }
 
@@ -261,4 +630,4 @@ h3 {
         font-size: 0.7rem;
         padding: 0 var(--spacing-xs, 0.25rem);
     }
-}
+    }
