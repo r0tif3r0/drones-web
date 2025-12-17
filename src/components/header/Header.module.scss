@@ -66,52 +66,341 @@
   position: relative;
   font-size: 9rem;
   // margin: 70px 200px;
-  animation: glitch 5s 5s infinite;
+  // Используем случайную анимацию из нескольких вариантов
+  animation: glitch-variant-1 2s infinite;
+}
+
+// Создаем несколько вариантов анимаций с разными интервалами для псевдорандома
+// Вариант 1: 2s цикл, пауза ~1.7s, glitch ~0.3s (85-100%)
+@keyframes glitch-variant-1 {
+  0%, 85% {
+    transform: translate(0);
+  }
+  87% {
+    transform: translate(-0.02em, 0.02em);
+  }
+  89% {
+    transform: translate(0.02em, -0.02em);
+  }
+  91% {
+    transform: translate(-0.02em, -0.02em);
+  }
+  93%, 100% {
+    transform: translate(0);
+  }
+}
+
+// Вариант 2: 2.7s цикл, пауза ~2.3s, glitch ~0.4s (85-100%)
+@keyframes glitch-variant-2 {
+  0%, 85% {
+    transform: translate(0);
+  }
+  87% {
+    transform: translate(0.03em, -0.01em);
+  }
+  89% {
+    transform: translate(-0.03em, 0.01em);
+  }
+  91% {
+    transform: translate(0.01em, 0.03em);
+  }
+  93%, 100% {
+    transform: translate(0);
+  }
+}
+
+// Вариант 3: 3.5s цикл, пауза ~2.9s, glitch ~0.6s (83-100%)
+@keyframes glitch-variant-3 {
+  0%, 83% {
+    transform: translate(0);
+  }
+  85% {
+    transform: translate(-0.01em, 0.03em);
+  }
+  87% {
+    transform: translate(0.03em, 0.01em);
+  }
+  89% {
+    transform: translate(-0.02em, -0.02em);
+  }
+  91% {
+    transform: translate(0.01em, -0.03em);
+  }
+  93%, 100% {
+    transform: translate(0);
+  }
+}
+
+// Вариант 4: 2.4s цикл, пауза ~2.05s, glitch ~0.35s (85-100%)
+@keyframes glitch-variant-4 {
+  0%, 85% {
+    transform: translate(0);
+  }
+  87% {
+    transform: translate(0.02em, 0.02em);
+  }
+  89% {
+    transform: translate(-0.02em, 0.02em);
+  }
+  91%, 100% {
+    transform: translate(0);
+  }
 }
 
 .glitch::before {
   content: attr(data-text);
   position: absolute;
-  left: -2px;
-  text-shadow: -5px 0 var(--color-primary, #d856bf);
+  left: -0.02em; // Относительно размера шрифта
+  text-shadow: -0.05em 0 var(--color-primary, #d856bf); // Относительно размера шрифта
   background: transparent;
   overflow: hidden;
   top: 0;
-  animation: noise-1 3s linear infinite alternate-reverse;
+  opacity: 0;
+  animation: noise-1-variant-1 2s infinite;
   mix-blend-mode: screen;
 }
 
 .glitch::after {
   content: attr(data-text);
   position: absolute;
-  left: 2px;
-  text-shadow: -5px 0 var(--color-secondary, #03b3c3);
+  left: 0.02em; // Относительно размера шрифта
+  text-shadow: 0.05em 0 var(--color-secondary, #03b3c3); // Относительно размера шрифта
   background: transparent;
   overflow: hidden;
   top: 0;
-  animation: noise-2 3s linear infinite alternate-reverse;
+  opacity: 0;
+  animation: noise-2-variant-1 2s infinite;
   mix-blend-mode: screen;
 }
 
-@keyframes noise-1 {
-  $steps: 30;
-  @for $i from 1 through $steps {
-    #{math.percentage($i * math.div(1, $steps))} {
+// Анимации noise для разных вариантов - активны только во время glitch эффекта
+// Вариант 1: 2s цикл, glitch на 85-100% (15% цикла = 0.3s)
+@keyframes noise-1-variant-1 {
+  0%, 85% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  85.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  // Быстрая анимация clip-path во время glitch (85-100%)
+  $steps: 20;
+  @for $i from 0 through $steps {
+    #{85 + math.percentage($i * math.div(1, $steps)) * 0.15} {
       $top: math.random(100);
       $bottom: math.random(101 - $top);
-      clip-path: inset(#{$top}px 0 #{$bottom}px 0);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
     }
   }
 }
 
-@keyframes noise-2 {
-  $steps: 30;
+@keyframes noise-2-variant-1 {
+  0%, 85% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  85.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  $steps: 20;
   @for $i from 0 through $steps {
-    #{math.percentage($i * math.div(1, $steps))} {
+    #{85 + math.percentage($i * math.div(1, $steps)) * 0.15} {
       $top: math.random(100);
       $bottom: math.random(101 - $top);
-      clip-path: inset(#{$top}px 0 #{$bottom}px 0);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
     }
+  }
+}
+
+// Вариант 2: 2.7s цикл, glitch на 85-100% (15% цикла = 0.4s)
+@keyframes noise-1-variant-2 {
+  0%, 85% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  85.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  $steps: 25;
+  @for $i from 0 through $steps {
+    #{85 + math.percentage($i * math.div(1, $steps)) * 0.15} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
+    }
+  }
+}
+
+@keyframes noise-2-variant-2 {
+  0%, 85% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  85.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  $steps: 25;
+  @for $i from 0 through $steps {
+    #{85 + math.percentage($i * math.div(1, $steps)) * 0.15} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
+    }
+  }
+}
+
+// Вариант 3: 3.5s цикл, glitch на 83-100% (17% цикла = 0.6s)
+@keyframes noise-1-variant-3 {
+  0%, 83% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  83.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  $steps: 30;
+  @for $i from 0 through $steps {
+    #{83 + math.percentage($i * math.div(1, $steps)) * 0.17} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
+    }
+  }
+}
+
+@keyframes noise-2-variant-3 {
+  0%, 83% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  83.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  $steps: 30;
+  @for $i from 0 through $steps {
+    #{83 + math.percentage($i * math.div(1, $steps)) * 0.17} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
+    }
+  }
+}
+
+// Вариант 4: 2.4s цикл, glitch на 85-100% (15% цикла = 0.35s)
+@keyframes noise-1-variant-4 {
+  0%, 85% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  85.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  $steps: 22;
+  @for $i from 0 through $steps {
+    #{85 + math.percentage($i * math.div(1, $steps)) * 0.15} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
+    }
+  }
+}
+
+@keyframes noise-2-variant-4 {
+  0%, 85% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  85.1%, 99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0% 0 100% 0);
+  }
+  $steps: 22;
+  @for $i from 0 through $steps {
+    #{85 + math.percentage($i * math.div(1, $steps)) * 0.15} {
+      $top: math.random(100);
+      $bottom: math.random(101 - $top);
+      clip-path: inset(#{$top * 1%} 0 #{$bottom * 1%} 0);
+    }
+  }
+}
+
+// Классы для применения разных вариантов анимаций
+.glitch[data-variant="1"] {
+  animation: glitch-variant-1 2s infinite;
+  
+  &::before {
+    animation: noise-1-variant-1 2s infinite;
+  }
+  
+  &::after {
+    animation: noise-2-variant-1 2s infinite;
+  }
+}
+
+.glitch[data-variant="2"] {
+  animation: glitch-variant-2 2.7s infinite;
+  
+  &::before {
+    animation: noise-1-variant-2 2.7s infinite;
+  }
+  
+  &::after {
+    animation: noise-2-variant-2 2.7s infinite;
+  }
+}
+
+.glitch[data-variant="3"] {
+  animation: glitch-variant-3 3.5s infinite;
+  
+  &::before {
+    animation: noise-1-variant-3 3.5s infinite;
+  }
+  
+  &::after {
+    animation: noise-2-variant-3 3.5s infinite;
+  }
+}
+
+.glitch[data-variant="4"] {
+  animation: glitch-variant-4 2.4s infinite;
+  
+  &::before {
+    animation: noise-1-variant-4 2.4s infinite;
+  }
+  
+  &::after {
+    animation: noise-2-variant-4 2.4s infinite;
   }
 }
 
@@ -156,10 +445,11 @@
 
 .glow {
   @extend .glitch;
+  // Используем em для адаптивности свечения под размер шрифта
   text-shadow: 
-    0 0 400px rgba(216, 86, 191, 0.4),
-    0 0 600px rgba(3, 179, 195, 0.3),
-    0 0 800px rgba(103, 80, 162, 0.2);
+    0 0 4em rgba(216, 86, 191, 0.4),
+    0 0 6em rgba(3, 179, 195, 0.3),
+    0 0 8em rgba(103, 80, 162, 0.2);
   color: transparent;
   position: absolute;
   top: 0;
@@ -233,12 +523,6 @@
   
   .glitch {
     font-size: 3rem;
-    animation: none;
-
-    &::before, &::after {
-      content: '';
-      animation: none;
-    }
   }
   
   .glow {
@@ -255,7 +539,6 @@
     left: auto;
     transform: none;
     letter-spacing: 0.5em;
-    animation: none;
     margin-top: var(--spacing-md, 1rem);
     text-align: center;
   }

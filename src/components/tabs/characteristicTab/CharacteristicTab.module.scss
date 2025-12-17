@@ -27,6 +27,7 @@
 	padding: var(--spacing-4xl, 6rem) var(--spacing-xl, 2rem);
 	overflow-y: auto;
 	overflow-x: hidden;
+	margin: 0 auto;
 }
 
 .header {
@@ -65,6 +66,7 @@
 	width: 100%;
 	max-width: 1400px;
 	padding: 0 var(--spacing-md, 1rem);
+	margin: 0 auto;
 }
 
 .card {
@@ -74,10 +76,22 @@
 	border-radius: 1rem;
 	padding: var(--spacing-xl, 2rem);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	overflow: hidden;
 	isolation: isolate;
 	transition: all var(--transition-base, 300ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
 	cursor: default;
+	
+	// Отключаем backdrop-filter на мобильных для лучшей производительности
+	@media (max-width: 768px) {
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+	
+	@media (max-width: 600px) {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
 	
 	&::before {
 		content: '';
@@ -213,6 +227,7 @@
 	.cards_grid {
 		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 		gap: var(--spacing-lg, 1.5rem);
+		width: 100%;
 	}
 	
 	.card {
@@ -224,6 +239,7 @@
 	.content_wrapper {
 		gap: var(--spacing-xl, 2rem);
 		padding: var(--spacing-2xl, 3rem) var(--spacing-md, 1rem);
+		max-width: 80%;
 	}
 	
 	.title {
@@ -237,6 +253,8 @@
 	.cards_grid {
 		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 		gap: var(--spacing-md, 1rem);
+		width: 100%;
+		padding: 0 var(--spacing-sm, 0.5rem);
 	}
 	
 	.card {
@@ -264,12 +282,14 @@
 @media (max-width: 600px) {
 	.content_wrapper {
 		gap: var(--spacing-lg, 1.5rem);
-		padding: var(--spacing-xl, 2rem) var(--spacing-sm, 0.5rem);
+		padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 		justify-content: flex-start;
+		width: 100%;
 	}
 	
 	.header {
 		margin-bottom: var(--spacing-md, 1rem);
+		width: 100%;
 	}
 	
 	.title {
@@ -286,7 +306,7 @@
 	.cards_grid {
 		grid-template-columns: 1fr;
 		gap: var(--spacing-md, 1rem);
-		padding: 0 var(--spacing-xs, 0.25rem);
+		padding: 0;
 		width: 100%;
 	}
 	
@@ -327,8 +347,9 @@
 
 @media (max-width: 400px) {
 	.content_wrapper {
-		padding: var(--spacing-lg, 1.5rem) var(--spacing-xs, 0.25rem);
+		padding: var(--spacing-lg, 1.5rem) var(--spacing-sm, 0.5rem);
 		gap: var(--spacing-md, 1rem);
+		width: 100%;
 	}
 	
 	.title {
@@ -342,6 +363,7 @@
 	.cards_grid {
 		gap: var(--spacing-sm, 0.5rem);
 		padding: 0;
+		width: 100%;
 	}
 	
 	.card {
@@ -365,15 +387,26 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (pointer: coarse) {
 	.card {
 		transition: none;
 		
 		&:hover {
 			transform: none;
+			box-shadow: none;
+
+			&::before {
+				opacity: 0.3;
+			}
+
+			.card_glow {
+				opacity: 0;
+				transform: none;
+			}
 		}
+
 	}
-	
+
 	.card_icon {
 		transition: none;
 		

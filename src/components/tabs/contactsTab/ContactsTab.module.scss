@@ -107,6 +107,7 @@
 	border-radius: 1rem;
 	padding: var(--spacing-2xl, 3rem);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	overflow: hidden;
 	isolation: isolate;
 	transition: all var(--transition-base, 300ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
@@ -117,6 +118,17 @@
 	text-align: center;
 	text-decoration: none;
 	color: inherit;
+	
+	// Отключаем backdrop-filter на мобильных для лучшей производительности
+	@media (max-width: 768px) {
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+	
+	@media (max-width: 600px) {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
 	
 	&::before {
 		content: '';
@@ -245,8 +257,20 @@
 	border-radius: 1.5rem;
 	padding: var(--spacing-2xl, 3rem);
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	overflow: hidden;
 	isolation: isolate;
+	
+	// Отключаем backdrop-filter на мобильных для лучшей производительности
+	@media (max-width: 768px) {
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+	
+	@media (max-width: 600px) {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
 	
 	&::before {
 		content: '';
@@ -324,7 +348,7 @@
 }
 
 .form_textarea {
-	resize: vertical;
+	resize: none;
 	min-height: 120px;
 	font-family: inherit;
 	line-height: var(--line-height-relaxed, 1.75);
@@ -548,7 +572,7 @@
 @media (max-width: 600px) {
 	.content_wrapper {
 		gap: var(--spacing-lg, 1.5rem);
-		padding: var(--spacing-xl, 2rem) var(--spacing-sm, 0.5rem);
+		padding: var(--spacing-xl, 2rem) var(--spacing-md, 1rem);
 		justify-content: flex-start;
 	}
 	
@@ -575,6 +599,10 @@
 	.section_title {
 		font-size: var(--font-size-lg, 1.125rem);
 		margin-bottom: var(--spacing-md, 1rem);
+	}
+
+	.contacts_section, .form_section {
+		gap: 0;
 	}
 	
 	.cards_grid {
@@ -651,7 +679,7 @@
 
 @media (max-width: 400px) {
 	.content_wrapper {
-		padding: var(--spacing-lg, 1.5rem) var(--spacing-xs, 0.25rem);
+		padding: var(--spacing-lg, 1.5rem) var(--spacing-md, 1rem);
 		gap: var(--spacing-md, 1rem);
 	}
 	
@@ -695,12 +723,22 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (pointer: coarse) {
 	.contact_card {
 		transition: none;
 		
 		&:hover {
 			transform: none;
+			box-shadow: none;
+
+			&::before {
+				opacity: 0.3;
+			}
+
+			.card_glow {
+				opacity: 0;
+				transform: none;
+			}
 		}
 	}
 	

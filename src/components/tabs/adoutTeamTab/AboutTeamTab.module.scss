@@ -89,6 +89,7 @@
 	padding: var(--spacing-2xl, 3rem) var(--spacing-xl, 2rem);
 	min-height: 450px;
 	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 	overflow: hidden;
 	isolation: isolate;
 	transition: all var(--transition-base, 300ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
@@ -98,6 +99,17 @@
 	align-items: center;
 	text-align: center;
 	justify-content: flex-start;
+	
+	// Отключаем backdrop-filter на мобильных для лучшей производительности
+	@media (max-width: 768px) {
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+	
+	@media (max-width: 600px) {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
 	
 	&::before {
 		content: '';
@@ -196,6 +208,13 @@
 		border-radius: 50%;
 		background: rgba(0, 0, 0, 0.3);
 		backdrop-filter: blur(5px);
+		-webkit-backdrop-filter: blur(5px);
+		
+		// Отключаем backdrop-filter на мобильных
+		@media (max-width: 600px) {
+			backdrop-filter: none;
+			-webkit-backdrop-filter: none;
+		}
 	}
 }
 
@@ -467,12 +486,30 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (pointer: coarse) {
 	.card {
 		transition: none;
 		
 		&:hover {
 			transform: none;
+			box-shadow: none;
+
+			&::before {
+				opacity: 0.3;
+			}
+
+			.card_glow {
+				opacity: 0;
+				transform: none;
+			}
+
+			.card_avatar {
+				transform: none;
+				
+				.avatar_circle {
+					box-shadow: 0 0 20px var(--card-glow-color, rgba(216, 86, 191, 0.3));
+				}
+			}
 		}
 	}
 	

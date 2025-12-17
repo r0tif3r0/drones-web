@@ -5,8 +5,22 @@ import { Hyperspeed } from "../../backgrounds/hyperspeed/Hyperspeed";
 
 export const ProductTab: FC = () => {
   const [allowMotion, setAllowMotion] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const firstCardRef = useRef<HTMLDivElement>(null);
   const secondCardRef = useRef<HTMLDivElement>(null);
+
+  // Проверка на мобильное устройство
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = window.innerWidth <= 768 || 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -136,7 +150,7 @@ export const ProductTab: FC = () => {
       <>
         <div className={styles.gradient}>
           <div className={styles.background}>
-          {allowMotion && (
+          {allowMotion && !isMobile && (
             <Hyperspeed
               effectOptions={hyperspeedOptions}
             />

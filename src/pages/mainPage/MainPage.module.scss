@@ -61,6 +61,17 @@ h3 {
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    
+    // Упрощаем backdrop-filter на мобильных
+    @media (max-width: 768px) {
+        backdrop-filter: blur(20px) saturate(150%);
+        -webkit-backdrop-filter: blur(20px) saturate(150%);
+    }
+    
+    @media (max-width: 600px) {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.4),
         inset 0 -1px 0 rgba(255, 255, 255, 0.2),
@@ -151,6 +162,17 @@ h3 {
         box-shadow: 
             inset 0 1px 2px rgba(255, 255, 255, 0.3),
             inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+        
+        // Упрощаем backdrop-filter на мобильных
+        @media (max-width: 768px) {
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+        }
+        
+        @media (max-width: 600px) {
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
     }
     
     // Верхний блик для liquid glass
@@ -293,6 +315,12 @@ h3 {
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         
+        // Дополнительное упрощение на маленьких экранах
+        @media (max-width: 600px) {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
         &::-webkit-scrollbar {
             display: none;
         }
@@ -398,6 +426,12 @@ h3 {
     -webkit-backdrop-filter: blur(4px);
     z-index: 999;
     animation: fadeIn var(--transition-base) var(--ease-out);
+    
+    // Отключаем backdrop-filter на очень маленьких экранах для производительности
+    @media (max-width: 400px) {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
 }
 
 // Мобильное меню
@@ -420,6 +454,12 @@ h3 {
     animation: slideUp var(--transition-base) var(--ease-out);
     max-height: calc(100vh - 200px);
     overflow-y: auto;
+    
+    // Упрощаем backdrop-filter на маленьких экранах
+    @media (max-width: 400px) {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
 }
 
 .mobile_menu_header {

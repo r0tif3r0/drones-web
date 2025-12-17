@@ -4,6 +4,42 @@ import { BloomEffect, EffectComposer, EffectPass, RenderPass, SMAAEffect, SMAAPr
 
 import './Hyperspeed.css';
 
+// Mobile detection and performance utilities
+function isMobileDevice(): boolean {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
+}
+
+function getDevicePixelRatio(): number {
+  const isMobile = isMobileDevice();
+  // Limit pixel ratio on mobile for better performance
+  const maxPixelRatio = isMobile ? Math.min(window.devicePixelRatio, 1.5) : window.devicePixelRatio;
+  return maxPixelRatio;
+}
+
+function checkDevicePerformance(): 'high' | 'medium' | 'low' {
+  const isMobile = isMobileDevice();
+  
+  if (!isMobile) {
+    return 'high';
+  }
+
+  // Check hardware concurrency (CPU cores)
+  const cores = navigator.hardwareConcurrency || 4;
+  
+  // Check device memory (if available)
+  const memory = (navigator as any).deviceMemory || 4;
+  
+  // Check if device is likely low-end
+  if (cores <= 4 && memory <= 4) {
+    return 'low';
+  } else if (cores <= 6 && memory <= 6) {
+    return 'medium';
+  }
+  
+  return 'high';
+}
+
 interface Distortion {
   uniforms: Record<string, { value: any }>;
   getDistortion: string;
@@ -936,6 +972,11 @@ class App {
   speedUpTarget: number;
   speedUp: number;
   timeOffset: number;
+  isMobile: boolean;
+  performanceLevel: 'high' | 'medium' | 'low';
+  isVisible: boolean;
+  intersectionObserver: IntersectionObserver | null;
+  animationFrameId: number | null;
 
   constructor(container: HTMLElement, options: HyperspeedOptions) {
     this.options = options;
@@ -947,12 +988,33 @@ class App {
     }
     this.container = container;
 
+    // Detect mobile and performance level
+    this.isMobile = isMobileDevice();
+    this.performanceLevel = checkDevicePerformance();
+    this.isVisible = true;
+    this.intersectionObserver = null;
+    this.animationFrameId = null;
+
+    // Optimize options for mobile/low-end devices
+    if (this.isMobile) {
+      // Reduce number of objects for better performance
+      if (this.performanceLevel === 'low') {
+        this.options.lightPairsPerRoadWay = Math.floor(this.options.lightPairsPerRoadWay * 0.5);
+        this.options.totalSideLightSticks = Math.floor(this.options.totalSideLightSticks * 0.5);
+      } else if (this.performanceLevel === 'medium') {
+        this.options.lightPairsPerRoadWay = Math.floor(this.options.lightPairsPerRoadWay * 0.7);
+        this.options.totalSideLightSticks = Math.floor(this.options.totalSideLightSticks * 0.7);
+      }
+    }
+
     this.renderer = new THREE.WebGLRenderer({
       antialias: false,
-      alpha: true
+      alpha: true,
+      powerPreference: this.isMobile ? 'low-power' : 'high-performance'
     });
     this.renderer.setSize(container.offsetWidth, container.offsetHeight, false);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    // Use optimized pixel ratio for mobile
+    this.renderer.setPixelRatio(getDevicePixelRatio());
 
     this.composer = new EffectComposer(this.renderer);
     container.appendChild(this.renderer.domElement);
@@ -1025,19 +1087,37 @@ class App {
 
   initPasses() {
     this.renderPass = new RenderPass(this.scene, this.camera);
+    
+    // Reduce resolution scale on mobile for better performance
+    let resolutionScale = 1;
+    if (this.isMobile) {
+      if (this.performanceLevel === 'low') {
+        resolutionScale = 0.5;
+      } else if (this.performanceLevel === 'medium') {
+        resolutionScale = 0.75;
+      } else {
+        resolutionScale = 0.85;
+      }
+    }
+
     this.bloomPass = new EffectPass(
       this.camera,
       new BloomEffect({
         luminanceThreshold: 0.2,
         luminanceSmoothing: 0,
-        resolutionScale: 1
+        resolutionScale: resolutionScale
       })
     );
+
+    // Use lower quality SMAA on mobile
+    const smaaPreset = this.isMobile && this.performanceLevel === 'low' 
+      ? SMAAPreset.LOW 
+      : SMAAPreset.MEDIUM;
 
     const smaaPass = new EffectPass(
       this.camera,
       new SMAAEffect({
-        preset: SMAAPreset.MEDIUM
+        preset: smaaPreset
       })
     );
     this.renderPass.renderToScreen = false;
@@ -1098,7 +1178,49 @@ class App {
     this.container.addEventListener('touchcancel', this.onTouchEnd, { passive: true });
     this.container.addEventListener('contextmenu', this.onContextMenu);
 
+    // Setup IntersectionObserver to pause animation when not visible
+    this.setupIntersectionObserver();
+
     this.tick();
+  }
+
+  setupIntersectionObserver() {
+    if (!('IntersectionObserver' in window)) {
+      return;
+    }
+
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const wasVisible = this.isVisible;
+          // Используем intersectionRatio для более точного определения видимости
+          // Анимация останавливается только когда видно менее 5% компонента
+          const visibilityThreshold = 0.05;
+          this.isVisible = entry.isIntersecting && entry.intersectionRatio > visibilityThreshold;
+          
+          // If component becomes visible and animation was paused, resume it
+          if (this.isVisible && !wasVisible && !this.disposed) {
+            // Reset clock to avoid huge delta when resuming
+            this.clock.start();
+            if (this.animationFrameId === null) {
+              this.tick();
+            }
+          } else if (!this.isVisible && wasVisible) {
+            // Pause clock when not visible to prevent large delta
+            this.clock.stop();
+          }
+        });
+      },
+      {
+        // Используем несколько threshold значений для более плавного отслеживания
+        threshold: [0, 0.01, 0.05, 0.1, 0.2, 0.5, 1],
+        // Отрицательный rootMargin снизу позволяет анимации продолжаться
+        // даже когда компонент частично скрыт внизу viewport
+        rootMargin: '0px 0px -20% 0px'
+      }
+    );
+
+    this.intersectionObserver.observe(this.container);
   }
 
   onMouseDown(ev: MouseEvent) {
@@ -1171,6 +1293,18 @@ class App {
   dispose() {
     this.disposed = true;
 
+    // Cancel animation frame if active
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
+    // Disconnect IntersectionObserver
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+      this.intersectionObserver = null;
+    }
+
     if (this.renderer) {
       this.renderer.dispose();
     }
@@ -1199,7 +1333,17 @@ class App {
   }
 
   tick() {
-    if (this.disposed || !this) return;
+    if (this.disposed || !this) {
+      this.animationFrameId = null;
+      return;
+    }
+
+    // Pause animation when not visible (mobile optimization)
+    if (!this.isVisible) {
+      this.animationFrameId = null;
+      return;
+    }
+
     if (resizeRendererToDisplaySize(this.renderer, this.setSize)) {
       const canvas = this.renderer.domElement;
       this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -1208,7 +1352,7 @@ class App {
     const delta = this.clock.getDelta();
     this.render(delta);
     this.update(delta);
-    requestAnimationFrame(this.tick);
+    this.animationFrameId = requestAnimationFrame(this.tick);
   }
 }
 

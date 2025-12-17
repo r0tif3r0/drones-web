@@ -16,24 +16,14 @@ export const MainPage: FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  useEffect(() => {
-    const updateTabHeight = () => {
-      const width = window.innerWidth;
-      setIsMobile(width <= 600);
-      
-      if (width <= 600) {
-        setTabContainerHeight(0); // На мобильных навбар скрыт
-      } else if (width <= 800) {
-        setTabContainerHeight(60);
-      } else {
-        setTabContainerHeight(70);
-      }
-    };
-    
-    updateTabHeight();
-    window.addEventListener('resize', updateTabHeight);
-    return () => window.removeEventListener('resize', updateTabHeight);
-  }, []);
+  // Кэш для DOM элементов секций
+  const sectionElementsRef = useRef<Record<string, HTMLElement | null>>({});
+  // Кэш для размеров окна
+  const windowSizeRef = useRef<{ width: number; height: number }>({ 
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0
+  });
+  
   const lastActiveRef = useRef<string | null>(null);
 
   const tabs = [
@@ -44,88 +34,193 @@ export const MainPage: FC = () => {
   ];
 
   useEffect(() => {
-    let rafId: number | null = null;
-    let lastScrollY = window.scrollY;
-
-    const handleScroll = () => {
-      // Throttle через requestAnimationFrame для лучшей производительности
-      if (rafId !== null) return;
-
-      rafId = requestAnimationFrame(() => {
-        const scrollY = window.scrollY;
-
-        // Обновляем состояние мобильного устройства
-        const currentIsMobile = window.innerWidth <= 600;
-        if (currentIsMobile !== isMobile) {
-          setIsMobile(currentIsMobile);
-          // Закрываем меню при изменении размера экрана
-          if (!currentIsMobile) {
-            setIsMobileMenuOpen(false);
-          }
+    // Функция для обновления кэша секций
+    const updateSectionCache = () => {
+      tabs.forEach(({ id }) => {
+        const element = document.getElementById(id);
+        if (element) {
+          sectionElementsRef.current[id] = element;
         }
+      });
+    };
 
-        // Убрана логика переключения классов для sticky навбара
-
-        // Оптимизированная логика определения активной секции
-        // Проверяем секции в обратном порядке при скролле вниз для более быстрого определения
-        const scrollingDown = scrollY > lastScrollY;
-        lastScrollY = scrollY;
-
-        let newActiveId: string | null = null;
+    // Кэшируем DOM элементы секций при монтировании
+    updateSectionCache();
+    
+    // Обновляем кэш при изменении размера окна с debounce
+    let resizeTimeout: number | null = null;
+    const handleResize = () => {
+      if (resizeTimeout !== null) {
+        clearTimeout(resizeTimeout);
+      }
+      
+      resizeTimeout = window.setTimeout(() => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        windowSizeRef.current = { width, height };
+        setIsMobile(width <= 600);
         
-        // Если скроллим вниз, проверяем секции в обратном порядке
-        const tabsToCheck = scrollingDown ? [...tabs].reverse() : tabs;
+        if (width <= 600) {
+          setTabContainerHeight(0); // На мобильных навбар скрыт
+        } else if (width <= 800) {
+          setTabContainerHeight(60);
+        } else {
+          setTabContainerHeight(70);
+        }
         
-        for (const { id } of tabsToCheck) {
-          const section = document.getElementById(id);
+        // Обновляем кэш секций после ресайза
+        updateSectionCache();
+        resizeTimeout = null;
+      }, 150); // Debounce для resize
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimeout !== null) {
+        clearTimeout(resizeTimeout);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Функция для обновления кэша секций
+    const updateSectionCache = () => {
+      tabs.forEach(({ id }) => {
+        const element = document.getElementById(id);
+        if (element) {
+          sectionElementsRef.current[id] = element;
+        }
+      });
+    };
+
+    // Обновляем кэш секций перед созданием observer
+    updateSectionCache();
+
+    // Используем IntersectionObserver для определения активной секции
+    const observerOptions = {
+      root: null,
+      rootMargin: `-${tabContainerHeight}px 0px -50% 0px`, // Учитываем высоту навбара и проверяем центр viewport
+      threshold: [0, 0.1, 0.5, 1]
+    };
+
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      // Находим секцию с наибольшей видимостью в центре viewport
+      let maxIntersection = 0;
+      let newActiveId: string | null = null;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > maxIntersection) {
+          maxIntersection = entry.intersectionRatio;
+          newActiveId = entry.target.id;
+        }
+      });
+
+      // Если IntersectionObserver не определил активную секцию, используем fallback
+      if (!newActiveId) {
+        const scrollY = window.scrollY;
+        const viewportCenter = scrollY + windowSizeRef.current.height / 2;
+        const currentIsMobile = windowSizeRef.current.width <= 600;
+        
+        for (const { id } of tabs) {
+          const section = sectionElementsRef.current[id];
           if (section) {
-            const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight);
+            const top = section.offsetTop - (currentIsMobile ? 0 : tabContainerHeight);
             const bottom = top + section.offsetHeight;
-            // Используем более точную проверку с учетом центра viewport
-            const viewportCenter = scrollY + window.innerHeight / 2;
             if (viewportCenter >= top && viewportCenter < bottom) {
               newActiveId = id;
-              break; // Прерываем цикл, как только нашли подходящую секцию
+              break;
             }
           }
         }
+      }
 
-        // Если не нашли по центру viewport, используем стандартную логику
-        if (!newActiveId) {
+      if (newActiveId && newActiveId !== lastActiveRef.current) {
+        lastActiveRef.current = newActiveId;
+        setActiveId(newActiveId);
+      }
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+
+    // Подписываемся на все секции
+    tabs.forEach(({ id }) => {
+      const section = sectionElementsRef.current[id];
+      if (section) {
+        observer.observe(section);
+      }
+    });
+
+    // Fallback scroll handler с улучшенным throttling для случаев, когда IntersectionObserver не срабатывает
+    let rafId: number | null = null;
+    let throttleTimeout: number | null = null;
+
+    const handleScroll = () => {
+      if (rafId !== null) return;
+
+      rafId = requestAnimationFrame(() => {
+        // Дополнительный throttle через setTimeout для мобильных устройств
+        if (throttleTimeout !== null) {
+          clearTimeout(throttleTimeout);
+        }
+
+        // Динамически определяем задержку на основе текущего размера экрана
+        const currentIsMobile = windowSizeRef.current.width <= 600;
+        const THROTTLE_DELAY = currentIsMobile ? 150 : 50;
+
+        throttleTimeout = window.setTimeout(() => {
+          const scrollY = window.scrollY;
+          
+          if (currentIsMobile !== isMobile) {
+            setIsMobile(currentIsMobile);
+            if (!currentIsMobile) {
+              setIsMobileMenuOpen(false);
+            }
+          }
+
+          // Используем кэшированные элементы
+          let newActiveId: string | null = null;
+          const viewportCenter = scrollY + windowSizeRef.current.height / 2;
+
           for (const { id } of tabs) {
-            const section = document.getElementById(id);
+            const section = sectionElementsRef.current[id];
             if (section) {
-              const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight);
+              const top = section.offsetTop - (currentIsMobile ? 0 : tabContainerHeight);
               const bottom = top + section.offsetHeight;
-              if (scrollY >= top && scrollY < bottom) {
+              if (viewportCenter >= top && viewportCenter < bottom) {
                 newActiveId = id;
                 break;
               }
             }
           }
-        }
 
-        if (newActiveId && newActiveId !== lastActiveRef.current) {
-          lastActiveRef.current = newActiveId;
-          setActiveId(newActiveId);
-        }
-        
-        rafId = null;
+          if (newActiveId && newActiveId !== lastActiveRef.current) {
+            lastActiveRef.current = newActiveId;
+            setActiveId(newActiveId);
+          }
+
+          rafId = null;
+          throttleTimeout = null;
+        }, THROTTLE_DELAY);
       });
     };
 
+    // Используем scroll handler только как fallback
     window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
-    handleScroll();
+    handleScroll(); // Инициализация
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
+      if (throttleTimeout !== null) {
+        clearTimeout(throttleTimeout);
+      }
     };
-  }, [isMobile, tabContainerHeight, isMobileMenuOpen]);
+  }, [isMobile, tabContainerHeight]);
 
   const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -133,8 +228,13 @@ export const MainPage: FC = () => {
     setActiveId(id);
     lastActiveRef.current = id;
     
-    const section = document.getElementById(id);
+    // Используем кэшированный элемент
+    const section = sectionElementsRef.current[id] || document.getElementById(id);
     if (section) {
+      // Обновляем кэш, если элемент не был закэширован
+      if (!sectionElementsRef.current[id]) {
+        sectionElementsRef.current[id] = section;
+      }
       const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight) + 1;
       window.scrollTo({ top, behavior: "smooth" });
       setIsMobileMenuOpen(false); // Закрываем меню после клика
@@ -148,8 +248,13 @@ export const MainPage: FC = () => {
   };
   
   const handleMobileNavClick = (id: string) => {
-    const section = document.getElementById(id);
+    // Используем кэшированный элемент
+    const section = sectionElementsRef.current[id] || document.getElementById(id);
     if (section) {
+      // Обновляем кэш, если элемент не был закэширован
+      if (!sectionElementsRef.current[id]) {
+        sectionElementsRef.current[id] = section;
+      }
       const top = section.offsetTop;
       window.scrollTo({ top, behavior: "smooth" });
       setIsMobileMenuOpen(false);
@@ -236,7 +341,7 @@ export const MainPage: FC = () => {
                 aria-label="Мобильная навигация"
               >
                 <div className={styles.mobile_menu_header}>
-                  <h2>Навигация</h2>
+                  <h2>Дройдек</h2>
                 </div>
                 <ul className={styles.mobile_menu_list}>
                   {tabs.map(({ id, title }) => (
