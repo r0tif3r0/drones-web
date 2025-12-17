@@ -57,7 +57,6 @@ const contactInfo: ContactInfo[] = [
 ];
 
 export const ContactsTab: FC = () => {
-  const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -70,37 +69,6 @@ export const ContactsTab: FC = () => {
   
   const cardRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.2,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.target.id) {
-          setVisibleCards(prev => new Set([...prev, entry.target.id]));
-        }
-      });
-    }, observerOptions);
-
-    const timeoutId = setTimeout(() => {
-      Object.values(cardRefs.current).forEach(ref => {
-        if (ref) {
-          observer.observe(ref);
-        }
-      });
-      if (formRef.current) {
-        observer.observe(formRef.current);
-      }
-    }, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-      observer.disconnect();
-    };
-  }, []);
 
   const formatPhoneNumber = (value: string): string => {
     // Удаляем все нецифровые символы
@@ -234,15 +202,12 @@ export const ContactsTab: FC = () => {
                     rel={contact.type === 'social' ? 'noopener noreferrer' : undefined}
                     className={cn(
                       styles.contact_card,
-                      styles[`card_${contact.color}`],
-                      styles.fade_in_up,
-                      { [styles.visible]: visibleCards.has(contact.id) }
+                      styles[`card_${contact.color}`]
                     )}
                     id={contact.id}
                     ref={(el) => {
                       cardRefs.current[contact.id] = el;
                     }}
-                    style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <div className={styles.card_icon}>{contact.icon}</div>
                     <div className={styles.card_content}>
@@ -260,11 +225,7 @@ export const ContactsTab: FC = () => {
               <h2 className={styles.section_title}>Форма обратной связи</h2>
               <form
                 ref={formRef}
-                className={cn(
-                  styles.contact_form,
-                  styles.fade_in_up,
-                  { [styles.visible]: visibleCards.has('contact-form') }
-                )}
+                className={styles.contact_form}
                 id="contact-form"
                 onSubmit={handleSubmit}
               >

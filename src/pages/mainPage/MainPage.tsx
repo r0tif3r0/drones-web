@@ -44,48 +44,74 @@ export const MainPage: FC = () => {
   ];
 
   useEffect(() => {
+    let rafId: number | null = null;
+    let lastScrollY = window.scrollY;
+
     const handleScroll = () => {
-      const scrollY = window.scrollY;
+      // Throttle через requestAnimationFrame для лучшей производительности
+      if (rafId !== null) return;
 
-      // Обновляем состояние мобильного устройства
-      const currentIsMobile = window.innerWidth <= 600;
-      if (currentIsMobile !== isMobile) {
-        setIsMobile(currentIsMobile);
-        // Закрываем меню при изменении размера экрана
-        if (!currentIsMobile) {
-          setIsMobileMenuOpen(false);
-        }
-      }
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
 
-      if (tabContainerRef.current && !isMobile) {
-        const heroSection = tabContainerRef.current.parentElement;
-        const heroTop = heroSection?.offsetTop ?? 0;
-        const heroHeight = heroSection?.clientHeight ?? 0;
-        const offset = heroTop + heroHeight - tabContainerHeight;
-
-        if (scrollY > offset) {
-          tabContainerRef.current.classList.add(styles["et_hero_tabs_container__top"]);
-        } else {
-          tabContainerRef.current.classList.remove(styles["et_hero_tabs_container__top"]);
-        }
-      }
-
-      let newActiveId: string | null = null;
-      tabs.forEach(({ id }) => {
-        const section = document.getElementById(id);
-        if (section) {
-          const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight);
-          const bottom = top + section.offsetHeight;
-          if (scrollY >= top && scrollY < bottom) {
-            newActiveId = id;
+        // Обновляем состояние мобильного устройства
+        const currentIsMobile = window.innerWidth <= 600;
+        if (currentIsMobile !== isMobile) {
+          setIsMobile(currentIsMobile);
+          // Закрываем меню при изменении размера экрана
+          if (!currentIsMobile) {
+            setIsMobileMenuOpen(false);
           }
         }
-      });
 
-      if (newActiveId && newActiveId !== lastActiveRef.current) {
-        lastActiveRef.current = newActiveId;
-        setActiveId(newActiveId);
-      }
+        // Убрана логика переключения классов для sticky навбара
+
+        // Оптимизированная логика определения активной секции
+        // Проверяем секции в обратном порядке при скролле вниз для более быстрого определения
+        const scrollingDown = scrollY > lastScrollY;
+        lastScrollY = scrollY;
+
+        let newActiveId: string | null = null;
+        
+        // Если скроллим вниз, проверяем секции в обратном порядке
+        const tabsToCheck = scrollingDown ? [...tabs].reverse() : tabs;
+        
+        for (const { id } of tabsToCheck) {
+          const section = document.getElementById(id);
+          if (section) {
+            const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight);
+            const bottom = top + section.offsetHeight;
+            // Используем более точную проверку с учетом центра viewport
+            const viewportCenter = scrollY + window.innerHeight / 2;
+            if (viewportCenter >= top && viewportCenter < bottom) {
+              newActiveId = id;
+              break; // Прерываем цикл, как только нашли подходящую секцию
+            }
+          }
+        }
+
+        // Если не нашли по центру viewport, используем стандартную логику
+        if (!newActiveId) {
+          for (const { id } of tabs) {
+            const section = document.getElementById(id);
+            if (section) {
+              const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight);
+              const bottom = top + section.offsetHeight;
+              if (scrollY >= top && scrollY < bottom) {
+                newActiveId = id;
+                break;
+              }
+            }
+          }
+        }
+
+        if (newActiveId && newActiveId !== lastActiveRef.current) {
+          lastActiveRef.current = newActiveId;
+          setActiveId(newActiveId);
+        }
+        
+        rafId = null;
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -95,11 +121,18 @@ export const MainPage: FC = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
     };
   }, [isMobile, tabContainerHeight, isMobileMenuOpen]);
 
   const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
+    // Сразу устанавливаем активную секцию при клике для мгновенного обновления навбара
+    setActiveId(id);
+    lastActiveRef.current = id;
+    
     const section = document.getElementById(id);
     if (section) {
       const top = section.offsetTop - (isMobile ? 0 : tabContainerHeight) + 1;
@@ -136,39 +169,40 @@ export const MainPage: FC = () => {
     <>
       <section className={styles.et_hero_tabs}>
         <Header/>
-        {/* Десктопная навигация */}
-        {!isMobile && (
-          <div
-            className={styles.et_hero_tabs_container}
-            ref={tabContainerRef}
-            role="tablist"
-            aria-label="Навигация по разделам"
-          >
-            {tabs.map(({ id, title }) => (
-              <a
-                key={id}
-                href={`#${id}`}
-                ref={(el) => {
-                  tabRefs.current[id] = el;
-                }}
-                className={`${styles.et_hero_tab} ${activeId === id ? styles.active : ""}`}
-                aria-current={activeId === id ? "page" : undefined}
-                role="tab"
-                onClick={(e) => handleTabClick(e, id)}
-              >
-                {title}
-              </a>
-            ))}
-            <span
-              className={styles.et_hero_tab_slider}
-              style={{ 
-                width: `${sliderStyle.width}px`, 
-                left: `${sliderStyle.left + sliderStyle.width / 2}px` 
-              }}
-            ></span>
-          </div>
-        )}
       </section>
+      
+      {/* Десктопная навигация - вынесена за пределы секции для sticky */}
+      {!isMobile && (
+        <div
+          className={styles.et_hero_tabs_container}
+          ref={tabContainerRef}
+          role="tablist"
+          aria-label="Навигация по разделам"
+        >
+          {tabs.map(({ id, title }) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              ref={(el) => {
+                tabRefs.current[id] = el;
+              }}
+              className={`${styles.et_hero_tab} ${activeId === id ? styles.active : ""}`}
+              aria-current={activeId === id ? "page" : undefined}
+              role="tab"
+              onClick={(e) => handleTabClick(e, id)}
+            >
+              {title}
+            </a>
+          ))}
+          <span
+            className={styles.et_hero_tab_slider}
+            style={{ 
+              width: `${sliderStyle.width}px`, 
+              left: `${sliderStyle.left + sliderStyle.width / 2}px` 
+            }}
+          ></span>
+        </div>
+      )}
 
       {/* Мобильная навигация - FAB с меню */}
       {isMobile && (

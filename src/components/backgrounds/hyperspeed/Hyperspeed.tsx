@@ -1,4 +1,4 @@
-import { useEffect, useRef, type FC } from 'react';
+import { useEffect, useRef, useMemo, type FC } from 'react';
 import * as THREE from 'three';
 import { BloomEffect, EffectComposer, EffectPass, RenderPass, SMAAEffect, SMAAPreset } from 'postprocessing';
 
@@ -1213,14 +1213,23 @@ class App {
 }
 
 export const Hyperspeed: FC<HyperspeedProps> = ({ effectOptions = {} }) => {
-  const mergedOptions: HyperspeedOptions = {
+  // Мемоизируем mergedOptions, чтобы избежать пересоздания при каждом рендере
+  // Используем effectOptions напрямую, так как он уже мемоизирован в родительском компоненте
+  const mergedOptions = useMemo<HyperspeedOptions>(() => ({
     ...defaultOptions,
     ...effectOptions
-  };
+  }), [effectOptions]);
+
   const hyperspeed = useRef<HTMLDivElement>(null);
   const appRef = useRef<App | null>(null);
 
   useEffect(() => {
+    // Если приложение уже инициализировано и не уничтожено, не пересоздаем
+    if (appRef.current && !appRef.current.disposed) {
+      return;
+    }
+
+    // Очищаем предыдущий экземпляр, если он есть
     if (appRef.current) {
       appRef.current.dispose();
       const container = document.getElementById('lights');
@@ -1244,7 +1253,7 @@ export const Hyperspeed: FC<HyperspeedProps> = ({ effectOptions = {} }) => {
     myApp.loadAssets().then(myApp.init);
 
     return () => {
-      if (appRef.current) {
+      if (appRef.current && !appRef.current.disposed) {
         appRef.current.dispose();
       }
     };

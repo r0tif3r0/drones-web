@@ -1,4 +1,4 @@
-import { type FC, useEffect, useRef, useState } from "react"
+import { type FC, useRef } from "react"
 import styles from './CharacteristicTab.module.scss';
 import cn from 'classnames';
 
@@ -79,37 +79,7 @@ const characteristics: Characteristic[] = [
 ];
 
 export const CharacteristicTab: FC = () => {
-  const [visibleCards, setVisibleCards] = useState<Set<string>>(new Set());
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.2,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.target.id) {
-          setVisibleCards(prev => new Set([...prev, entry.target.id]));
-        }
-      });
-    }, observerOptions);
-
-    // Observe all cards after a short delay to ensure refs are set
-    const timeoutId = setTimeout(() => {
-      Object.values(cardRefs.current).forEach(ref => {
-        if (ref) {
-          observer.observe(ref);
-        }
-      });
-    }, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-      observer.disconnect();
-    };
-  }, []);
 
     return (
       <>
@@ -130,11 +100,8 @@ export const CharacteristicTab: FC = () => {
                   }}
                   className={cn(
                     styles.card,
-                    styles[`card_${char.color}`],
-                    styles.fade_in_up,
-                    { [styles.visible]: visibleCards.has(char.id) }
+                    styles[`card_${char.color}`]
                   )}
-                  style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className={styles.card_icon}>{char.icon}</div>
                   <div className={styles.card_content}>

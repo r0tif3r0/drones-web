@@ -8,47 +8,9 @@ a {
 
 .et_hero_tabs {
     background: var(--color-bg, #000);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    min-height: 100vh;
-    max-height: 100vh;
-    position: relative;
-    text-align: center;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    box-sizing: border-box;
-    
-    // Для мобильных устройств используем dvh (dynamic viewport height)
-    @media (max-width: 600px) {
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
-        // Fallback для браузеров без поддержки dvh
-        @supports not (height: 100dvh) {
-            height: 100vh;
-            min-height: 100vh;
-            max-height: 100vh;
-            // Дополнительный fallback для старых браузеров
-            height: -webkit-fill-available;
-        }
-    }
-    
-    // Для очень маленьких экранов
-    @media (max-width: 400px) {
-        height: 100dvh;
-        min-height: 100dvh;
-        max-height: 100dvh;
-        @supports not (height: 100dvh) {
-            height: 100vh;
-            min-height: 100vh;
-            max-height: 100vh;
-        }
-    }
 }
 
+.et_hero_tabs,
 .et_slide {
     display: flex;
     flex-direction: column;
@@ -59,7 +21,6 @@ a {
     position: relative;
     text-align: center;
     overflow-x: hidden;
-    overflow-y: auto;
     
     @media (max-width: 600px) {
         min-height: 100vh;
@@ -82,13 +43,14 @@ h3 {
 }
 
 .et_hero_tabs_container {
-    z-index: 1;
+    z-index: 1000;
     display: flex;
     flex-direction: row;
-    position: absolute;
-    bottom: 0;
+    position: sticky;
+    top: 0;
     width: 100%;
     height: 70px;
+    margin-top: 0;
     // Liquid Glass эффект в стиле Apple
     background: linear-gradient(
         to bottom,
@@ -98,14 +60,13 @@ h3 {
     );
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 
-        0 -8px 32px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 1px 0 rgba(0, 0, 0, 0.1);
     z-index: 10;
     -webkit-overflow-scrolling: touch;
-    position: relative;
     overflow: hidden;
     
     // Верхний блик для liquid glass эффекта
@@ -126,11 +87,11 @@ h3 {
         z-index: 0;
     }
     
-    // Градиентная полоса снизу с цветами темы
+    // Градиентная полоса сверху с цветами темы
     &::after {
         content: '';
         position: absolute;
-        bottom: 0;
+        top: 0;
         left: 0;
         right: 0;
         height: 2px;
@@ -145,33 +106,6 @@ h3 {
         opacity: 0.6;
         filter: blur(1px);
         z-index: 1;
-    }
-    
-    &__top {
-        position: fixed;
-        top: 0;
-        border-top: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.4),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.2),
-            inset 0 1px 0 rgba(0, 0, 0, 0.1);
-        
-        &::before {
-            top: auto;
-            bottom: 0;
-            background: linear-gradient(
-                to top,
-                rgba(255, 255, 255, 0.15) 0%,
-                rgba(255, 255, 255, 0.08) 50%,
-                transparent 100%
-            );
-        }
-        
-        &::after {
-            top: 0;
-            bottom: auto;
-        }
     }
 }
 

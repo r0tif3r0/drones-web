@@ -118,7 +118,6 @@
 	--glow-size: 1.5rem;
 	--glow-intensity: 0.2;
 	--surface: rgba(0, 0, 0, 0.6);
-	--parallax-y: 0px;
   
 	margin-block: 2rem;
 	margin-inline: 0;
@@ -136,11 +135,13 @@
   
 	position: relative;
 	isolation: isolate;
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	transform: translateY(var(--parallax-y));
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	transform: translateY(0) translateZ(0);
 	transition: opacity var(--transition-slow, 500ms ease-in-out);
-	will-change: opacity;
+	will-change: transform;
+	contain: layout style paint;
+	backface-visibility: hidden;
   
 	animation: glow 10s infinite linear;
 	color: inherit;
@@ -178,7 +179,7 @@
 
 	// Hover эффекты отключены
 	&:hover {
-		transform: translateY(var(--parallax-y));
+		// Transform handled by JS for parallax
 	}
   }
   
@@ -191,17 +192,6 @@
 	}
   }
 
-  @keyframes fadeInUp {
-	from {
-	  opacity: 0;
-	  transform: translateY(3rem);
-	}
-	to {
-	  opacity: 1;
-	  transform: translateY(0);
-	}
-  }
-  
   .glowing_border::before,
   .glowing_border::after {
 	content: "";
@@ -216,19 +206,22 @@
 	inset: 0.5rem;
 	scale: 1.2 1;
 	transform-origin: right;
-	filter: blur(var(--glow-size));
+	filter: blur(1.2rem);
 	opacity: 0.8;
+	will-change: auto;
   }
   
   .glowing_border::after {
 	z-index: -2;
 	inset: -1.5rem;
 	background: conic-gradient(from var(--glow-deg), var(--gradient-glow));
-	filter: blur(var(--glow-size));
+	filter: blur(1.2rem);
 	opacity: var(--glow-intensity);
 	animation: glow 10s infinite linear;
 	left: -1.5rem;
 	right: -1.5rem;
+	will-change: transform;
+	transform: translateZ(0);
   }
   
   .glowing_border.right {
@@ -245,7 +238,7 @@
 
 	// Hover эффекты отключены
 	&:hover {
-		transform: translateY(var(--parallax-y));
+		// Transform handled by JS for parallax
 	}
 	
 	@media (max-width: 600px) {
@@ -254,18 +247,6 @@
 	}
   }
 
-  .fade_in_up {
-	opacity: 0;
-	transform: translateY(3rem) translateY(var(--parallax-y, 0px));
-	transition: opacity var(--transition-slow, 500ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1)),
-	            transform var(--transition-slow, 500ms) var(--ease-out, cubic-bezier(0, 0, 0.2, 1));
-
-	&.visible {
-		opacity: 1;
-		transform: translateY(0) translateY(var(--parallax-y, 0px));
-	}
-  }
-  
   @layer general-styling {
 	* {
 	  box-sizing: border-box;
@@ -289,8 +270,8 @@
 	
 	// Отключаем parallax на мобильных
 	.glowing_border {
-		transform: translateY(0);
-		--parallax-y: 0px;
+		transform: translateY(0) !important;
+		will-change: auto;
 	}
 	.content_wrapper {
 		gap: var(--spacing-2xl, 3rem);
@@ -392,8 +373,7 @@
 		border-radius: 1rem;
 		border: var(--border-width) solid transparent;
 		align-self: center;
-		--parallax-y: 0px;
-		transform: translateY(0);
+		transform: translateY(0) !important;
 		animation: none;
 		will-change: auto;
 		
@@ -448,14 +428,6 @@
 		
 		&:active {
 			transform: scale(0.98);
-		}
-	}
-
-	.fade_in_up {
-		transform: translateY(1rem);
-		
-		&.visible {
-			transform: translateY(0);
 		}
 	}
   }
@@ -516,11 +488,5 @@
 		&::after {
 			animation: none;
 		}
-	}
-
-	.fade_in_up {
-		opacity: 1;
-		transform: none;
-		transition: none;
 	}
   }
