@@ -51,7 +51,7 @@ export const AboutTeamTab: FC = () => {
           </div>
           
           <div className={styles.cards_grid}>
-            {teamMembers.map((member, index) => (
+            {teamMembers.map((member, _index) => (
               <div
                 key={member.id}
                 id={member.id}

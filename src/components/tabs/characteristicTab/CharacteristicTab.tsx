@@ -91,7 +91,7 @@ export const CharacteristicTab: FC = () => {
             </div>
             
             <div className={styles.cards_grid}>
-              {characteristics.map((char, index) => (
+              {characteristics.map((char, _index) => (
                 <div
                   key={char.id}
                   id={char.id}

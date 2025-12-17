@@ -1,4 +1,4 @@
-import { type FC, useEffect, useRef, useState } from "react"
+import { type FC, useRef, useState } from "react"
 import styles from './ContactsTab.module.scss';
 import cn from 'classnames';
 
@@ -194,7 +194,7 @@ export const ContactsTab: FC = () => {
             <div className={styles.contacts_section}>
               <h2 className={styles.section_title}>Способы связи</h2>
               <div className={styles.cards_grid}>
-                {contactInfo.map((contact, index) => (
+                {contactInfo.map((contact, _index) => (
                   <a
                     key={contact.id}
                     href={contact.link}
